@@ -7,7 +7,7 @@ import { getDenoKvSessionPlugin} from "https://deno.land/x/fresh_session@beta-0.
 export default defineConfig({
   plugins: [
     tailwind(),
-    getDenoKvSessionPlugin("/", {client: await Deno.openKv(":memory:"),        cookieOptions:{maxAge: 60 * 10}}),
+    getDenoKvSessionPlugin("/", {client: await Deno.openKv(),        cookieOptions:{maxAge: 60 * 10}}),
   
   ],
 });
