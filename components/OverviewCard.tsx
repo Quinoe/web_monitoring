@@ -17,7 +17,7 @@ export function OverviewCard({ background,
 }: OverviewCardProps) {
     return (
         <div
-            class="w-[150px] h-[200px] flex justify-between p-[10px] rounded-lg"
+            class="w-[130px] h-[200px] flex justify-between p-[10px] rounded-lg"
             style={{
                 flexDirection: "column",
                 background: background,

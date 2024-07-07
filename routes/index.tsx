@@ -7,6 +7,32 @@ import { OverviewCard } from "../components/OverviewCard.tsx";
 import { OverviewTable } from "../components/OverviewTable.tsx";
 import { Map } from "../islands/Map.tsx";
 import { ClinetList } from "../islands/ClientList.tsx";
+import { Handlers } from "$fresh/server.ts";
+
+export const handler: Handlers<
+    unknown,
+    WithSession<"KEY_A" | "KEY_B" | "KEY_C", "success">
+> = {
+    GET(_req, ctx) {
+      const { session } = ctx.state;
+
+      if (Boolean(session.get("authenticated"))) {
+        return ctx.render();
+      } 
+
+      const headers = new Headers();
+        
+      headers.set("location", "/login");
+
+      return new Response(null, {
+        status: 303, // See Other
+        headers,
+      });
+        
+    },
+
+};
+
 export default function Home() {
   const statuses = [
     {
@@ -85,14 +111,14 @@ export default function Home() {
           )}
         </div>
         <div class="bg-[white] rounded-lg flex-1 p-[10px] h-full w-[100%] px-[20px] flex w-fit gap-[10px]">
-          <div class="h-[250px] w-full">
+          <div class="h-[300px] w-[95%]">
             <OverviewTable />
           </div>
         </div>
       </div>
 
       <div class="bg-[white] p-[10px] w-full px-[20px] flex w-fit gap-[10px] rounded-lg">
-        <div className="w-[75%] bg-[transparent] h-[400px]">
+        <div className="w-[75%] bg-[transparent] h-[100%]">
           <Map />
         </div>
         <div className="w-[25%] ">

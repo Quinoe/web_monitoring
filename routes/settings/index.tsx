@@ -1,6 +1,4 @@
-import { PageProps } from "$fresh/server.ts";
-
-import { ClientsPage } from "../../islands/ClientsPage.tsx";
+import { SettingsPage } from "../../islands/SettingsPage.tsx";
 
 export const handler: Handlers<
     unknown,
@@ -27,8 +25,10 @@ export const handler: Handlers<
 };
 
 
-export default function Greet(props: PageProps) {
-  return (
-    <ClientsPage />
-  );
+export default function Settings() {
+    return (
+        <div className="p-[20px] bg-[white] rounded-lg h-full w-full flex min-h-[80vh]">
+            <SettingsPage />
+        </div>
+    )
 }

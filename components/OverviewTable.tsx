@@ -29,7 +29,9 @@ export function OverviewTable() {
                                         Otto
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
-                                        @mdo
+                                        <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[100px] p-[10px]">
+                                            Active
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr class="border-b border-neutral-200 dark:border-white/10">
@@ -43,7 +45,9 @@ export function OverviewTable() {
                                         Thornton
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
-                                        @fat
+                                        <div className="flex text-center justify-center border-[1px] bg-[#FFE2E5] border-[#FA5A7D] text-[#FA5A7D] rounded-md w-[100px] p-[10px]">
+                                            Down
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr class="border-b border-neutral-200 dark:border-white/10">
@@ -57,7 +61,9 @@ export function OverviewTable() {
                                         Larry the Bird
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
-                                        @twitter
+                                        <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[100px] p-[10px]">
+                                            Active
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
