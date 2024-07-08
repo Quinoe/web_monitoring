@@ -9,7 +9,7 @@ export function OverviewTable() {
                                 <tr>
                                     <th scope="col" class=" px-6 py-4">#</th>
                                     <th scope="col" class=" px-6 py-4">
-                                        Name
+                                        Client name
                                     </th>
                                     <th scope="col" class=" px-6 py-4">Last downtime</th>
                                     <th scope="col" class=" px-6 py-4">
@@ -23,10 +23,10 @@ export function OverviewTable() {
                                         1
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
-                                        Mark
+                                      Rumah Sakit XYZ
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
-                                        Otto
+                                      07/01/2024 07:00:00
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
                                         <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[100px] p-[10px]">
@@ -38,11 +38,11 @@ export function OverviewTable() {
                                     <td class="whitespace-nowrap  px-6 py-4 font-medium">
                                         2
                                     </td>
-                                    <td class="whitespace-nowrap  px-6 py-4 ">
-                                        Jacob
+                                    <td class="whitespace-nowrap  px-6 py-4">
+                                      Rumah Sakit XYZ
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
-                                        Thornton
+                                      07/01/2024 07:00:00
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
                                         <div className="flex text-center justify-center border-[1px] bg-[#FFE2E5] border-[#FA5A7D] text-[#FA5A7D] rounded-md w-[100px] p-[10px]">
@@ -51,14 +51,14 @@ export function OverviewTable() {
                                     </td>
                                 </tr>
                                 <tr class="border-b border-neutral-200 dark:border-white/10">
-                                    <td class="whitespace-nowrap  px-6 py-4 font-medium">
+                                     <td class="whitespace-nowrap  px-6 py-4 font-medium">
                                         3
                                     </td>
-                                    <td
-                                        colspan={2}
-                                        class="whitespace-nowrap  px-6 py-4"
-                                    >
-                                        Larry the Bird
+                                    <td class="whitespace-nowrap  px-6 py-4">
+                                      Rumah Sakit XYZ
+                                    </td>
+                                    <td class="whitespace-nowrap  px-6 py-4">
+                                      07/01/2024 07:00:00
                                     </td>
                                     <td class="whitespace-nowrap  px-6 py-4">
                                         <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[100px] p-[10px]">

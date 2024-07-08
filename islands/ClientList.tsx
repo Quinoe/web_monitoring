@@ -77,7 +77,9 @@ export function ClinetList() {
                         </div>
                     </div>
                     <div>
-                        aaa
+                        <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[100px] p-[10px]">
+                            Active
+                        </div>
                     </div>
                 </div>
             </div>
