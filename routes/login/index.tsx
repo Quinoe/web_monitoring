@@ -1,9 +1,10 @@
 import type { WithSession } from "https://deno.land/x/fresh_session@beta-0.3.0/mod.ts";
 import { Handlers, PageProps } from "$fresh/server.ts";
+import TrpcDemo from "../../islands/TrpcDemo.tsx";
 
 export const handler: Handlers<
     unknown,
-    WithSession<"KEY_A" | "KEY_B" | "KEY_C", "authenticated">
+    WithSession<"authenticated", "true" | "false">
 > = {
     GET(_req, ctx) {
         return ctx.render();

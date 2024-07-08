@@ -6,6 +6,7 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
 import * as $api_joke from "./routes/api/joke.ts";
+import * as $api_trpc_path_ from "./routes/api/trpc/[path].ts";
 import * as $clients_index from "./routes/clients/index.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login_layout from "./routes/login/_layout.tsx";
@@ -21,6 +22,7 @@ import * as $Map from "./islands/Map.tsx";
 import * as $Menu from "./islands/Menu.tsx";
 import * as $SettingsPage from "./islands/SettingsPage.tsx";
 import * as $SignoutPage from "./islands/SignoutPage.tsx";
+import * as $TrpcDemo from "./islands/TrpcDemo.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -29,6 +31,7 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
     "./routes/api/joke.ts": $api_joke,
+    "./routes/api/trpc/[path].ts": $api_trpc_path_,
     "./routes/clients/index.tsx": $clients_index,
     "./routes/index.tsx": $index,
     "./routes/login/_layout.tsx": $login_layout,
@@ -46,6 +49,7 @@ const manifest = {
     "./islands/Menu.tsx": $Menu,
     "./islands/SettingsPage.tsx": $SettingsPage,
     "./islands/SignoutPage.tsx": $SignoutPage,
+    "./islands/TrpcDemo.tsx": $TrpcDemo,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
