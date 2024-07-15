@@ -8,8 +8,8 @@ import {
   query,
 } from "./models/Clients.ts"; // Import the schema and type
 import { Client } from "https://deno.land/x/mysql/mod.ts";
-import { ConsoleHandler } from "https://deno.land/std@0.104.0/log/handlers.ts";
-import { createClient } from 'npm:@supabase/supabase-js';
+import { createClient } from "npm:@supabase/supabase-js";
+import { startOfMonth, endOfMonth, subMonths } from "npm:date-fns";
 
 const t = initTRPC.create();
 const router = t.router;
@@ -22,32 +22,33 @@ const client = await new Client().connect({
   password: "adminadmin",
 });
 
-const supabaseUrl = 'https://smslhuphdqodyajevqhg.supabase.co'; // Replace with your Supabase URL
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtc2xodXBoZHFvZHlhamV2cWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MDI2NTEsImV4cCI6MjAzNTk3ODY1MX0.AKuC62F2Z_uVdLdY3PF6anvjp6XjkEsvpm46sm7EMU4'; // Replace with your Supabase key
+const supabaseUrl = "https://smslhuphdqodyajevqhg.supabase.co"; // Replace with your Supabase URL
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtc2xodXBoZHFvZHlhamV2cWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MDI2NTEsImV4cCI6MjAzNTk3ODY1MX0.AKuC62F2Z_uVdLdY3PF6anvjp6XjkEsvpm46sm7EMU4"; // Replace with your Supabase key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Initialize the clients table if it does not exist
 const initTable = async () => {
   const { error } = await supabase
-    .from('clients')
-    .select('*')
+    .from("clients")
+    .select("*")
     .limit(1);
 
-  console.log(error)
-  
+  console.log(error);
+
   if (error) {
-    await supabase.from('clients').insert([{
-      id_pelanggan: '',
-      client_name: '',
-      cpe: '',
-      port: '',
-      service: '',
+    await supabase.from("clients").insert([{
+      id_pelanggan: "",
+      client_name: "",
+      cpe: "",
+      port: "",
+      service: "",
       latitude: 0,
       longitude: 0,
-      address: '',
-      pic_name: '',
-      pic_email: '',
-      registered_date: ''
+      address: "",
+      pic_name: "",
+      pic_email: "",
+      registered_date: "",
     }]);
   }
 };
@@ -76,13 +77,19 @@ function convertToMySQLDate(dateString: string) {
   return `${year}-${formattedMonth}-${formattedDay}`;
 }
 
+const getStartAndEndOfMonth = (date: Date) => {
+  const start = startOfMonth(date);
+  const end = endOfMonth(date);
+  return { start, end };
+};
+
+
 export const appRouter = router({
-  hello: publicProceducre.query(() => "world"),
   "clients.get": publicProceducre.query(async () => {
     const { data, error } = await supabase
-      .from('clients')
-      .select('*');
-    
+      .from("clients")
+      .select("*");
+
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 400,
@@ -100,7 +107,9 @@ export const appRouter = router({
     });
 
     try {
-      const validatedClients = ClientsSchema.parse(clients) as any as ClientType[];
+      const validatedClients = ClientsSchema.parse(
+        clients,
+      ) as any as ClientType[];
       return validatedClients;
     } catch (e) {
       return new Response(JSON.stringify({ error: e.errors }), {
@@ -109,16 +118,91 @@ export const appRouter = router({
       });
     }
   }),
+  "clients.search": publicProceducre
+    .input(z.object({
+      query: z.string(),
+      limit: z.number().optional()
+    }))
+    .query(async ({ input }) => {
+      const { query, limit } = input;
+
+      const { data, error } = limit ? await supabase
+      .from("clients")
+      .select("*")
+      .ilike("client_name", `%${query}%`).limit(limit) : await supabase
+        .from("clients")
+        .select("*")
+        .ilike("client_name", `%${query}%`)
+        ;
+
+      
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const clients = data.map(({ registered_date, ...rest }) => {
+        return {
+          ...rest,
+          registered_date: new Date(registered_date).toLocaleString(),
+          latitude: Number(rest.latitude),
+          longitude: Number(rest.longitude),
+        };
+      });
+
+      try {
+        const validatedClients = ClientsSchema.parse(
+          clients,
+        ) as any as ClientType[];
+        return validatedClients;
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.errors }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }),
+  "clients.aggregate": publicProceducre.query(async () => {
+    const currentMonth = new Date();
+    const lastMonth = subMonths(currentMonth, 1);
+
+    const { start: currentMonthStart, end: currentMonthEnd } = getStartAndEndOfMonth(currentMonth);
+    const { start: lastMonthStart, end: lastMonthEnd } = getStartAndEndOfMonth(lastMonth);
+
+    const currentMonthData = await supabase
+      .from('clients')
+      .select('*')
+      .gte('registered_date', currentMonthStart.toISOString())
+      .lte('registered_date', currentMonthEnd.toISOString());
+
+    const lastMonthData = await supabase
+      .from('clients')
+      .select('*')
+      .gte('registered_date', lastMonthStart.toISOString())
+      .lte('registered_date', lastMonthEnd.toISOString());
+
+    if (currentMonthData.error || lastMonthData.error) {
+      throw new Error('Error fetching data from Supabase');
+    }
+
+    const currentMonthTotal = currentMonthData.data.length;
+    const lastMonthTotal = lastMonthData.data.length;
+    const difference = currentMonthTotal - lastMonthTotal;
+    const percentageChange = lastMonthTotal === 0 ? (currentMonthTotal === 0 ? 0 : 100) : ((difference / lastMonthTotal) * 100);
+
+    return { currentMonthTotal, lastMonthTotal, difference, percentageChange };
+  }),
   "clients.create": publicProceducre
     .input(clientSchema)
     .mutation(async ({ input }) => {
       input.registered_date = convertToMySQLDate(input.registered_date);
       const { data, error } = await supabase
-        .from('clients')
+        .from("clients")
         .insert([input]);
 
-      console.log(error, 'asu')
-      
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: 400,
@@ -134,10 +218,10 @@ export const appRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { data, error } = await supabase
-        .from('clients')
+        .from("clients")
         .delete()
-        .eq('id_pelanggan', input.id);
-      
+        .eq("id_pelanggan", input.id);
+
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: 400,
@@ -152,12 +236,12 @@ export const appRouter = router({
     .mutation(async ({ input }) => {
       input.registered_date = convertToMySQLDate(input.registered_date);
       const { data, error } = await supabase
-        .from('clients')
+        .from("clients")
         .update(input)
-        .eq('id_pelanggan', input.id_pelanggan);
+        .eq("id_pelanggan", input.id_pelanggan);
 
-      console.log(data, error)
-      
+      console.log(data, error);
+
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: 400,
@@ -168,6 +252,5 @@ export const appRouter = router({
       return data;
     }),
 });
-
 
 export type AppRouter = typeof appRouter;

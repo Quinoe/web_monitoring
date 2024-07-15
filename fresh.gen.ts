@@ -20,6 +20,8 @@ import * as $ClientsPage from "./islands/ClientsPage.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $Map from "./islands/Map.tsx";
 import * as $Menu from "./islands/Menu.tsx";
+import * as $OverviewCard from "./islands/OverviewCard.tsx";
+import * as $OverviewTable from "./islands/OverviewTable.tsx";
 import * as $SettingsPage from "./islands/SettingsPage.tsx";
 import * as $SignoutPage from "./islands/SignoutPage.tsx";
 import * as $TrpcDemo from "./islands/TrpcDemo.tsx";
@@ -47,6 +49,8 @@ const manifest = {
     "./islands/Counter.tsx": $Counter,
     "./islands/Map.tsx": $Map,
     "./islands/Menu.tsx": $Menu,
+    "./islands/OverviewCard.tsx": $OverviewCard,
+    "./islands/OverviewTable.tsx": $OverviewTable,
     "./islands/SettingsPage.tsx": $SettingsPage,
     "./islands/SignoutPage.tsx": $SignoutPage,
     "./islands/TrpcDemo.tsx": $TrpcDemo,

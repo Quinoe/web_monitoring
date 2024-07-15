@@ -7,7 +7,7 @@ import { routes } from '../islands/Menu.tsx'
 export type Route = {
     name: string,
     path: string,
-    icon: string
+    icon: any
 }
 
 export const getRoute = (_routes: Route[], route: string) => {
