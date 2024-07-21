@@ -5,12 +5,13 @@ import { signal } from "@preact/signals";
 
 import type { inferRouterOutputs } from '@trpc/server';
 import type { AppRouter } from '../router.ts';
-import { ClientType } from "../models/Clients.ts";
+import { ClientTypeWithStatus } from "../models/Clients.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
+import { getStatus } from "./OverviewTable.tsx";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
-type PostCreateOutput = RouterOutput['clients.get'];
+type PostCreateOutput = RouterOutput['clients.search'];
 
 const searchQuery = signal('')
 
@@ -36,8 +37,6 @@ export function ClinetList() {
         const target = e.target as HTMLInputElement;
         searchQuery.value = target.value
     };
-
-    console.log(searchQuery.value)
 
     return (
         <div
@@ -88,7 +87,7 @@ export function ClinetList() {
                 class="border-[1px] flex border-[#ccc] flex-1 bg-[white] w-full h-full rounded-lg"
             >
                 {
-                    (clients as ClientType[]).map((client) => {
+                    (clients as ClientTypeWithStatus[]).map((client) => {
                         return (
                             <div class="border-b-[1px] border-[#ccc] flex justify-between px-[10px] py-[10px]">
                                 <div
@@ -118,9 +117,7 @@ export function ClinetList() {
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[100px] p-[10px]">
-                                        Active
-                                    </div>
+                                    {getStatus(client.status)}
                                 </div>
                             </div>
                         )

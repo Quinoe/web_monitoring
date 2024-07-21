@@ -18,9 +18,29 @@ export const clientSchema = z.object({
     registered_date: z.string().nonempty(), // assuming registered_date is a string; if it's a date object, use z.date()
 });
 
+export const clientSchemaWithStatus = z.object({
+    id_pelanggan: z.string().max(255),
+    client_name: z.string().nonempty(),
+    cpe: z.string().nonempty(),
+    port: z.string().nonempty(),
+    service: z.string().nonempty(),
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+    address: z.string().nonempty(),
+    pic_name: z.string().nonempty(),
+    pic_email: z.string(),
+    registered_date: z.string().nonempty(), // assuming registered_date is a string; if it's a date object, use z.date(),
+    status: z.string().max(255),
+    last_updated_status: z.string()
+});
+
+
 export const ClientsSchema = z.array(clientSchema);
 
+export const ClientsSchemaWithStatus = z.array(clientSchemaWithStatus);
+
 export type ClientType = z.infer<typeof clientSchema>;
+export type ClientTypeWithStatus = z.infer<typeof clientSchemaWithStatus>;
 export type ClientsType = z.infer<typeof ClientsSchema>;
 
 const buildInsertQuery = (tableName: string, data: ClientType) => {

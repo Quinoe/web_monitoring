@@ -8,6 +8,7 @@ import * as $_layout from "./routes/_layout.tsx";
 import * as $api_joke from "./routes/api/joke.ts";
 import * as $api_trpc_path_ from "./routes/api/trpc/[path].ts";
 import * as $clients_index from "./routes/clients/index.tsx";
+import * as $cpe_index from "./routes/cpe/index.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login_layout from "./routes/login/_layout.tsx";
 import * as $login_index from "./routes/login/index.tsx";
@@ -15,6 +16,7 @@ import * as $settings_index from "./routes/settings/index.tsx";
 import * as $signout_index from "./routes/signout/index.tsx";
 import * as $signup_layout from "./routes/signup/_layout.tsx";
 import * as $signup_index from "./routes/signup/index.tsx";
+import * as $CPEpage from "./islands/CPEpage.tsx";
 import * as $ClientList from "./islands/ClientList.tsx";
 import * as $ClientsPage from "./islands/ClientsPage.tsx";
 import * as $Counter from "./islands/Counter.tsx";
@@ -35,6 +37,7 @@ const manifest = {
     "./routes/api/joke.ts": $api_joke,
     "./routes/api/trpc/[path].ts": $api_trpc_path_,
     "./routes/clients/index.tsx": $clients_index,
+    "./routes/cpe/index.tsx": $cpe_index,
     "./routes/index.tsx": $index,
     "./routes/login/_layout.tsx": $login_layout,
     "./routes/login/index.tsx": $login_index,
@@ -44,6 +47,7 @@ const manifest = {
     "./routes/signup/index.tsx": $signup_index,
   },
   islands: {
+    "./islands/CPEpage.tsx": $CPEpage,
     "./islands/ClientList.tsx": $ClientList,
     "./islands/ClientsPage.tsx": $ClientsPage,
     "./islands/Counter.tsx": $Counter,

@@ -14,6 +14,11 @@ export const routes: Route[] = [
         icon: 'fa-building'
     },
     {
+        name: 'CPE',
+        path: '/cpe',
+        icon: 'fa-building'
+    },
+    {
         name: 'Settings',
         path: '/settings',
         icon: (color: string) => (

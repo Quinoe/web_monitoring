@@ -17,10 +17,10 @@ export function OverviewCard() {
             key: "total_clients",
             icon: "fa-building",
             background: "#DEF5FF",
-            title: `${aggregate?.percentageChange}% new clients from last month`,
-            description: "lorem ipsum",
+            description: `${aggregate?.percentageChange}% new clients from last month`,
+            title: "Total clients",
             iconBackground: "#7ABFFF",
-            count: 300,
+            count: aggregate?.totalClient,
         },
         {
             key: "total_status_down",
@@ -33,25 +33,25 @@ export function OverviewCard() {
             ),
             background: "#FFE2E5",
             title: "Down",
-            description: "lorem ipsum",
+            description: "",
             iconBackground: "#FA5A7D",
-            count: 300,
+            count: aggregate?.totalInactiveClients,
         },
         {
             key: "total_status_active",
             icon: "fa-signal",
             background: "#DCFCE7",
             title: "Active",
-            description: "lorem ipsum",
+            description: "",
             iconBackground: "#3CD856",
-            count: 300,
+            count: aggregate?.totalActiveClients,
         },
         {
             key: "total_new_clients",
             icon: "fa-building",
             background: "#F3E8FF",
             title: "New clients",
-            description: "lorem ipsum",
+            description: "",
             iconBackground: "#BF83FF",
             count: aggregate?.currentMonthTotal,
         },
@@ -66,50 +66,62 @@ export function OverviewCard() {
         fetchClientAggregate()
     }, [])
 
+
     return (
         <div class="flex gap-[10px]">
-            {statuses.map(
-                ({
-                    title,
-                    iconBackground,
-                    background,
-                    count,
-                    icon,
-                    description,
-                }) => {
-                    return (
-                        <div
-                            class="w-[130px] h-[200px] flex justify-between p-[10px] rounded-lg"
-                            style={{
-                                flexDirection: "column",
-                                background: background,
-                            }}
-                        >
-                            <div style={{
-                                background: iconBackground
-                            }} class="rounded-full  w-[32px] h-[32px] flex justify-center items-center">
-                                {
-                                    (typeof icon === 'string' && icon.length) ? (
-                                        <i class={`fa ${icon} text-white`}></i>
-                                    ) : (
-                                        icon
-                                    )
-                                }
+            {
+                aggregate ? (
+                    <>
+                        {statuses.map(
+                            ({
+                                title,
+                                iconBackground,
+                                background,
+                                count,
+                                icon,
+                                description,
+                            }) => {
+                                return (
+                                    <div
+                                        class="w-[130px] h-[200px] flex justify-between p-[10px] rounded-lg"
+                                        style={{
+                                            flexDirection: "column",
+                                            background: background,
+                                        }}
+                                    >
+                                        <div style={{
+                                            background: iconBackground
+                                        }} class="rounded-full  w-[32px] h-[32px] flex justify-center items-center">
+                                            {
+                                                (typeof icon === 'string' && icon.length) ? (
+                                                    <i class={`fa ${icon} text-white`}></i>
+                                                ) : (
+                                                    icon
+                                                )
+                                            }
 
-                            </div>
-                            <div className="text-2xl font-bold">
-                                {count}
-                            </div>
-                            <div className="text-md">
-                                {title}
-                            </div>
-                            <div className="text-xs">
-                                {description}
-                            </div>
-                        </div>
-                    );
-                }
-            )}
+                                        </div>
+                                        <div className="text-2xl font-bold">
+                                            {count}
+                                        </div>
+                                        <div className="text-md">
+                                            {title}
+                                        </div>
+                                        <div className="text-xs">
+                                            {description}
+                                        </div>
+                                    </div>
+                                );
+                            }
+                        )}
+                    </>
+                ) : (
+                    <div>
+                        Loading...
+                    </div>
+                )
+            }
+
         </div>
 
     );

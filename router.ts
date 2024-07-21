@@ -4,12 +4,14 @@ import { z } from "zod";
 import {
   clientSchema,
   ClientsSchema,
+  ClientsSchemaWithStatus,
   ClientType,
-  query,
+  ClientTypeWithStatus,
 } from "./models/Clients.ts"; // Import the schema and type
 import { Client } from "https://deno.land/x/mysql/mod.ts";
 import { createClient } from "npm:@supabase/supabase-js";
-import { startOfMonth, endOfMonth, subMonths } from "npm:date-fns";
+import { endOfMonth, startOfMonth, subMonths } from "npm:date-fns";
+import { createCpeSchema, updateCPEsSchema } from "./models/CPE.ts";
 
 const t = initTRPC.create();
 const router = t.router;
@@ -26,34 +28,6 @@ const supabaseUrl = "https://smslhuphdqodyajevqhg.supabase.co"; // Replace with 
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtc2xodXBoZHFvZHlhamV2cWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MDI2NTEsImV4cCI6MjAzNTk3ODY1MX0.AKuC62F2Z_uVdLdY3PF6anvjp6XjkEsvpm46sm7EMU4"; // Replace with your Supabase key
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Initialize the clients table if it does not exist
-const initTable = async () => {
-  const { error } = await supabase
-    .from("clients")
-    .select("*")
-    .limit(1);
-
-  console.log(error);
-
-  if (error) {
-    await supabase.from("clients").insert([{
-      id_pelanggan: "",
-      client_name: "",
-      cpe: "",
-      port: "",
-      service: "",
-      latitude: 0,
-      longitude: 0,
-      address: "",
-      pic_name: "",
-      pic_email: "",
-      registered_date: "",
-    }]);
-  }
-};
-
-await initTable();
 
 function convertToMySQLDate(dateString: string) {
   // Split the date and time parts
@@ -83,36 +57,77 @@ const getStartAndEndOfMonth = (date: Date) => {
   return { start, end };
 };
 
+const getStatus = (status: string) => {
+  switch (status) {
+    case "admin down" || "down":
+      return "down";
+    case "up":
+      return "active";
+    default:
+      return "inactive";
+  }
+};
 
-export const appRouter = router({
-  "clients.get": publicProceducre.query(async () => {
-    const { data, error } = await supabase
-      .from("clients")
-      .select("*");
+const getClientsWithStatus = async (
+  data: ClientType[],
+  status?: "active" | "down",
+) => {
+  const clients = await Promise.all(
+    data.map(async ({ registered_date, ...rest }: any) => {
+      const { data: cpe, error: cpeError } = await supabase
+        .from("cpe")
+        .select("*")
+        .eq("cpe_name", rest.cpe)
+        .single();
 
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+      const { data: cpeStatus, error: cpeStatusError } = await supabase
+        .from("cpe_status")
+        .select("*")
+        .eq("ip", cpe.ip)
+        .eq("interface", rest.port)
+        .single();
 
-    const clients = data.map(({ registered_date, ...rest }) => {
       return {
         ...rest,
         registered_date: new Date(registered_date).toLocaleString(),
         latitude: Number(rest.latitude),
         longitude: Number(rest.longitude),
+        status: getStatus(
+          cpeError || cpeStatusError ? "" : cpeStatus.status,
+        ),
+        last_updated_status: new Date(cpeStatus.updated_at).toLocaleString(),
       };
-    });
+    }),
+  );
+
+  return clients.filter(({ status: clientStatus }) =>
+    status === undefined ? true : status === clientStatus
+  );
+};
+
+export const appRouter = router({
+  "clients.get": publicProceducre.query(async () => {
+    const { data: clientsData, error: clientsError } = await supabase
+      .from("clients")
+      .select("*");
+
+    if (clientsError) {
+      return new Response(JSON.stringify({ error: clientsError.message }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     try {
-      const validatedClients = ClientsSchema.parse(
+      const clients = await getClientsWithStatus(clientsData);
+
+      const validatedClients = ClientsSchemaWithStatus.parse(
         clients,
-      ) as any as ClientType[];
+      ) as ClientTypeWithStatus[];
+
       return validatedClients;
-    } catch (e) {
-      return new Response(JSON.stringify({ error: e.errors }), {
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message || e.errors }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -121,21 +136,20 @@ export const appRouter = router({
   "clients.search": publicProceducre
     .input(z.object({
       query: z.string(),
-      limit: z.number().optional()
+      limit: z.number().optional(),
     }))
     .query(async ({ input }) => {
       const { query, limit } = input;
 
-      const { data, error } = limit ? await supabase
-      .from("clients")
-      .select("*")
-      .ilike("client_name", `%${query}%`).limit(limit) : await supabase
-        .from("clients")
-        .select("*")
-        .ilike("client_name", `%${query}%`)
-        ;
-
-      
+      const { data, error } = limit
+        ? await supabase
+          .from("clients")
+          .select("*")
+          .ilike("client_name", `%${query}%`).limit(limit)
+        : await supabase
+          .from("clients")
+          .select("*")
+          .ilike("client_name", `%${query}%`);
 
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
@@ -144,19 +158,12 @@ export const appRouter = router({
         });
       }
 
-      const clients = data.map(({ registered_date, ...rest }) => {
-        return {
-          ...rest,
-          registered_date: new Date(registered_date).toLocaleString(),
-          latitude: Number(rest.latitude),
-          longitude: Number(rest.longitude),
-        };
-      });
+      const clients = await getClientsWithStatus(data);
 
       try {
-        const validatedClients = ClientsSchema.parse(
+        const validatedClients = ClientsSchemaWithStatus.parse(
           clients,
-        ) as any as ClientType[];
+        ) as any as ClientTypeWithStatus[];
         return validatedClients;
       } catch (e) {
         return new Response(JSON.stringify({ error: e.errors }), {
@@ -169,31 +176,58 @@ export const appRouter = router({
     const currentMonth = new Date();
     const lastMonth = subMonths(currentMonth, 1);
 
-    const { start: currentMonthStart, end: currentMonthEnd } = getStartAndEndOfMonth(currentMonth);
-    const { start: lastMonthStart, end: lastMonthEnd } = getStartAndEndOfMonth(lastMonth);
+    const { start: currentMonthStart, end: currentMonthEnd } =
+      getStartAndEndOfMonth(currentMonth);
+    const { start: lastMonthStart, end: lastMonthEnd } = getStartAndEndOfMonth(
+      lastMonth,
+    );
 
     const currentMonthData = await supabase
-      .from('clients')
-      .select('*')
-      .gte('registered_date', currentMonthStart.toISOString())
-      .lte('registered_date', currentMonthEnd.toISOString());
+      .from("clients")
+      .select("*")
+      .gte("registered_date", currentMonthStart.toISOString())
+      .lte("registered_date", currentMonthEnd.toISOString());
 
     const lastMonthData = await supabase
-      .from('clients')
-      .select('*')
-      .gte('registered_date', lastMonthStart.toISOString())
-      .lte('registered_date', lastMonthEnd.toISOString());
+      .from("clients")
+      .select("*")
+      .gte("registered_date", lastMonthStart.toISOString())
+      .lte("registered_date", lastMonthEnd.toISOString());
+
+    const totalClients = await supabase
+      .from("clients")
+      .select("*");
+
+    const activeClients = await getClientsWithStatus(
+      totalClients.data as ClientType[],
+      "active",
+    );
+
+    const downClients = await getClientsWithStatus(
+      totalClients.data as ClientType[],
+      "down",
+    );
 
     if (currentMonthData.error || lastMonthData.error) {
-      throw new Error('Error fetching data from Supabase');
+      throw new Error("Error fetching data from Supabase");
     }
 
     const currentMonthTotal = currentMonthData.data.length;
     const lastMonthTotal = lastMonthData.data.length;
     const difference = currentMonthTotal - lastMonthTotal;
-    const percentageChange = lastMonthTotal === 0 ? (currentMonthTotal === 0 ? 0 : 100) : ((difference / lastMonthTotal) * 100);
+    const percentageChange = lastMonthTotal === 0
+      ? (currentMonthTotal === 0 ? 0 : 100)
+      : ((difference / lastMonthTotal) * 100);
 
-    return { currentMonthTotal, lastMonthTotal, difference, percentageChange };
+    return {
+      currentMonthTotal,
+      lastMonthTotal,
+      difference,
+      percentageChange,
+      totalClient: totalClients.data?.length ?? 0,
+      totalActiveClients: activeClients.length ?? 0,
+      totalInactiveClients: downClients.length ?? 0,
+    };
   }),
   "clients.create": publicProceducre
     .input(clientSchema)
@@ -201,7 +235,7 @@ export const appRouter = router({
       input.registered_date = convertToMySQLDate(input.registered_date);
       const { data, error } = await supabase
         .from("clients")
-        .insert([input]);
+        .insert([{ ...input, status: "", created_at: Date.now() }]);
 
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
@@ -237,10 +271,11 @@ export const appRouter = router({
       input.registered_date = convertToMySQLDate(input.registered_date);
       const { data, error } = await supabase
         .from("clients")
-        .update(input)
+        .update({
+          ...input,
+          updated_at: Date.now(),
+        })
         .eq("id_pelanggan", input.id_pelanggan);
-
-      console.log(data, error);
 
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
@@ -250,6 +285,144 @@ export const appRouter = router({
       }
 
       return data;
+    }),
+  "cpe.create": publicProceducre
+    .input(createCpeSchema)
+    .mutation(async ({ input: cpe }) => {
+      const { ip, ...rest } = cpe;
+
+      // Check if the IP exists in the table
+      const { data: existingCPE, error: selectError } = await supabase
+        .from("cpe")
+        .select("*")
+        .eq("ip", ip)
+        .single();
+
+      if (selectError && selectError.code !== "PGRST116") {
+        // Handle error (other than "No rows returned" error)
+        throw new Error(`Error checking IP: ${selectError.message}`);
+      }
+
+      if (existingCPE) {
+        throw new Error(`Entity exist`);
+      } else {
+        // If IP does not exist, insert a new entry
+        const { error: insertError } = await supabase
+          .from("cpe")
+          .insert({
+            uuid: crypto.randomUUID(),
+            ip,
+            ...rest,
+            created_at: Date.now(),
+          });
+
+        if (insertError) {
+          throw new Error(`Error inserting IP: ${insertError.message}`);
+        }
+      }
+    }),
+  "cpe.get": publicProceducre
+    .query(async () => {
+      // Check if the IP exists in the table
+      const { data } = await supabase
+        .from("cpe")
+        .select("*");
+
+      return data;
+    }),
+  "cpe.update": publicProceducre
+    .input(createCpeSchema)
+    .mutation(async ({ input }) => {
+      const { data, error } = await supabase
+        .from("cpe")
+        .update({
+          ...input,
+          updated_at: Date.now(),
+        })
+        .eq("uuid", input.uuid);
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return data;
+    }),
+  "cpe.delete": publicProceducre.input(createCpeSchema)
+    .mutation(async ({ input }) => {
+      // Check if the IP exists in the table
+      const { data, error } = await supabase
+        .from("cpe")
+        .delete()
+        .eq("uuid", input.uuid);
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return data;
+    }),
+  "cpe_status.update": publicProceducre
+    .input(updateCPEsSchema)
+    .mutation(async ({ input }) => {
+      const updatedAt = Date.now();
+
+      for (const cpe of input) {
+        const { ip, ...rest } = cpe;
+
+        // Check if the IP exists in the table
+        const { data: existingCPE, error: selectError } = await supabase
+          .from("cpe_status")
+          .select("*")
+          .eq("ip", ip)
+          .eq("interface", cpe.interface)
+          .single();
+
+        if (selectError && selectError.code !== "PGRST116") {
+          // Handle error (other than "No rows returned" error)
+          throw new Error(`Error checking IP: ${selectError.message}`);
+        }
+
+        if (existingCPE !== null) {
+          const updated = {
+            ...existingCPE,
+            ...rest,
+            ip,
+            updated_at: updatedAt,
+          };
+          // If IP exists, update the entry
+          const { error: updateError } = await supabase
+            .from("cpe_status")
+            .update(updated)
+            .eq("ip", ip)
+            .eq("interface", cpe.interface);
+
+          if (updateError) {
+            throw new Error(`Error updating status`);
+          }
+        } else {
+          const updated = {
+            ...existingCPE,
+            ...rest,
+            uuid: crypto.randomUUID(),
+            ip,
+            created_at: updatedAt,
+          };
+          // If IP exists, update the entry
+          const { error: createError } = await supabase
+            .from("cpe_status")
+            .insert(updated);
+
+          if (createError) {
+            throw new Error(`Error updating status`);
+          }
+        }
+      }
     }),
 });
 
