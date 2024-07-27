@@ -81,8 +81,6 @@ export function OverviewTable() {
                                         )
                                     })
                                 }
-
-                                x
                             </tbody>
                         </table>
                     </div>

@@ -57,9 +57,8 @@ export function CPEPage() {
             <div className="flex justify-between items-end">
                 <div>
                     <div className="text-xl">
-                        <strong>Client list</strong>
+                        <strong>CPE list</strong>
                     </div>
-                    <div class="text-lg">More than xxx new clients</div>
                 </div>
                 <div>
                     <button

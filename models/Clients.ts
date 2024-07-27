@@ -31,7 +31,8 @@ export const clientSchemaWithStatus = z.object({
     pic_email: z.string(),
     registered_date: z.string().nonempty(), // assuming registered_date is a string; if it's a date object, use z.date(),
     status: z.string().max(255),
-    last_updated_status: z.string()
+    last_updated_status: z.string(),
+    ip: z.string()
 });
 
 

@@ -59,12 +59,13 @@ const getStartAndEndOfMonth = (date: Date) => {
 
 const getStatus = (status: string) => {
   switch (status) {
-    case "admin down" || "down":
+    case "down":
+    case "admin down":
       return "down";
     case "up":
       return "active";
     default:
-      return "inactive";
+      return status;
   }
 };
 
@@ -88,6 +89,7 @@ const getClientsWithStatus = async (
           longitude: Number(rest.longitude),
           status: '-',
           last_updated_status: '-',
+          ip: '-'
         }
       }
 
@@ -106,7 +108,8 @@ const getClientsWithStatus = async (
         status: getStatus(
           cpeError || cpeStatusError ? "" : cpeStatus.status,
         ),
-        last_updated_status: new Date(cpeStatus.updated_at).toLocaleString(),
+        last_updated_status: cpeStatus?.updated_at ? new Date(cpeStatus.updated_at).toLocaleString() : '',
+        ip: cpe.ip
       };
     }),
   );

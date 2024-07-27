@@ -106,10 +106,10 @@ export function ClinetList() {
                                             {client.cpe}
                                         </div>
                                         <div>
-                                            -
+                                            {client.ip}
                                         </div>
                                         <div>
-                                            -
+                                            {client.port}
                                         </div>
                                     </div>
                                     <div class="text-[14px]">
