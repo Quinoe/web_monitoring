@@ -80,6 +80,17 @@ const getClientsWithStatus = async (
         .eq("cpe_name", rest.cpe)
         .single();
 
+      if (!cpe) {
+        return {
+          ...rest,
+          registered_date: new Date(registered_date).toLocaleString(),
+          latitude: Number(rest.latitude),
+          longitude: Number(rest.longitude),
+          status: '-',
+          last_updated_status: '-',
+        }
+      }
+
       const { data: cpeStatus, error: cpeStatusError } = await supabase
         .from("cpe_status")
         .select("*")
