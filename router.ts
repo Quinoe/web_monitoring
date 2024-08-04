@@ -119,6 +119,29 @@ const getClientsWithStatus = async (
   );
 };
 
+async function readFile(filePath: string) {
+  try {
+    const data = await Deno.readFile(filePath);
+    const decoder = new TextDecoder("utf-8");
+    const text = decoder.decode(data);
+    console.log(text);
+    return text
+  } catch (error) {
+    console.error("Error reading file:", error);
+  }
+}
+async function writeFile(filePath: string, content: string) {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(content);
+    await Deno.writeFile(filePath, data);
+    console.log("File written successfully!");
+  } catch (error) {
+    console.error("Error writing file:", error);
+  }
+}
+
+
 export const appRouter = router({
   "clients.get": publicProceducre.query(async () => {
     const { data: clientsData, error: clientsError } = await supabase
@@ -187,6 +210,13 @@ export const appRouter = router({
       }
     }),
   "clients.aggregate": publicProceducre.query(async () => {
+
+    await writeFile("./example.txt", `Hello, Deno! ${Date.now()}`);
+
+
+    // Call the function
+    const text = await readFile("./example.txt");
+
     const currentMonth = new Date();
     const lastMonth = subMonths(currentMonth, 1);
 
@@ -195,6 +225,8 @@ export const appRouter = router({
     const { start: lastMonthStart, end: lastMonthEnd } = getStartAndEndOfMonth(
       lastMonth,
     );
+
+
 
     const currentMonthData = await supabase
       .from("clients")
@@ -241,6 +273,7 @@ export const appRouter = router({
       totalClient: totalClients.data?.length ?? 0,
       totalActiveClients: activeClients.length ?? 0,
       totalInactiveClients: downClients.length ?? 0,
+      text
     };
   }),
   "clients.create": publicProceducre
