@@ -16,14 +16,14 @@ export const getStatus = (status: string) => {
     switch (status) {
         case 'down':
             return (
-                <div className="flex text-center  justify-center border-[1px] bg-[#FFE2E5] border-[#FA5A7D] text-[#FA5A7D] rounded-md w-[100px] p-[10px]">
+                <div className="flex text-center  justify-center border-[1px] bg-[#FFE2E5] border-[#FA5A7D] text-[#FA5A7D] rounded-md w-[80px] p-[4px]">
                     {capitalizeFirstLetter(status)}
                 </div>
             )
 
         case 'active':
             return (
-                <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[100px] p-[10px]">
+                <div className="flex text-center  justify-center border-[1px] bg-[#DCFCE7] border-[#3CD856] text-[#3CD856] rounded-md w-[80px] p-[4px]">
                     {capitalizeFirstLetter(status)}
                 </div>
             )

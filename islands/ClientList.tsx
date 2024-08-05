@@ -8,6 +8,7 @@ import type { AppRouter } from '../router.ts';
 import { ClientTypeWithStatus } from "../models/Clients.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { getStatus } from "./OverviewTable.tsx";
+import { Map } from "./Map.tsx";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
@@ -16,18 +17,7 @@ type PostCreateOutput = RouterOutput['clients.search'];
 const searchQuery = signal('')
 
 
-export function ClinetList() {
-    const [clients, setClients] = useState<PostCreateOutput>([]);
-
-    const fetchPosts = (query: string) => trpc["clients.search"].query({ query }).then(setClients);
-
-    useEffect(() => {
-        fetchPosts('')
-    }, [])
-
-    useEffect(() => {
-        fetchPosts(searchQuery.value)
-    }, [searchQuery.value])
+export function ClinetList({ clients }: any) {
 
     if (!IS_BROWSER) {
         return null
@@ -40,7 +30,7 @@ export function ClinetList() {
 
     return (
         <div
-            class="flex h-full"
+            class="flex h-[400px] overflow-y-auto"
             style={{
                 flexDirection: "column",
                 gap: "10px",
@@ -127,4 +117,30 @@ export function ClinetList() {
             </div>
         </div>
     );
+}
+
+export function DashboardPage() {
+    const [clients, setClients] = useState<PostCreateOutput>([]);
+
+    const fetchPosts = (query: string) => trpc["clients.search"].query({ query }).then(setClients);
+
+    useEffect(() => {
+        fetchPosts('')
+    }, [])
+
+    useEffect(() => {
+        fetchPosts(searchQuery.value)
+    }, [searchQuery.value])
+
+    return (
+        <>
+            <div className="w-[75%] bg-[transparent] h-[100%]">
+                <Map clients={clients} />
+            </div>
+            <div className="w-[25%] ">
+                <ClinetList clients={clients} />
+            </div>
+        </>
+
+    )
 }

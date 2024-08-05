@@ -1,7 +1,7 @@
 import { OverviewCard } from "../islands/OverviewCard.tsx";
 import { OverviewTable } from "../islands/OverviewTable.tsx";
 import { Map } from "../islands/Map.tsx";
-import { ClinetList } from "../islands/ClientList.tsx";
+import { ClinetList, DashboardPage } from "../islands/ClientList.tsx";
 import { Handlers } from "$fresh/server.ts";
 import { WithSession } from "https://deno.land/x/fresh_session@beta-0.3.0/mod.ts";
 
@@ -49,12 +49,7 @@ export default function Home() {
       </div>
 
       <div class="bg-[white] p-[10px] w-full px-[20px] flex w-fit gap-[10px] rounded-lg">
-        <div className="w-[75%] bg-[transparent] h-[100%]">
-          <Map />
-        </div>
-        <div className="w-[25%] ">
-          <ClinetList />
-        </div>
+        <DashboardPage />
       </div>
     </div>
   );

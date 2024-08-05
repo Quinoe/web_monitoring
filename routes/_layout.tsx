@@ -22,7 +22,7 @@ export default function Layout({ Component, route }: PageProps) {
     const isLoginPage = route.includes('/login') || route.includes('/signup') || route.includes('/forgot_password')
 
     return (
-        <div className="bg-[#FAFBFC] flex h-[fit-content]">
+        <div className="bg-[#FAFBFC] flex h-[100vh] overflow-y-auto">
             {
                 !isLoginPage && (
                     <Sidebar>
