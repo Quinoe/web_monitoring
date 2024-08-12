@@ -1,22 +1,40 @@
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { consumeToken } from "$std/media_types/_util.ts";
-import { useEffect } from "preact/hooks";
-
+import { useEffect, useRef } from "preact/hooks";
+import { createPopper } from 'npm:@popperjs/core'
 
 export function Map({ clients }: any) {
     if (!IS_BROWSER) return null
 
-    useEffect(() => {
+    const isPopupOpen = useRef(false)
+    const popupElementRef = useRef<any>(null)
 
+    useEffect(() => {
 
         const renderMap = async () => {
             const L = (window as any).L;
 
+            var popupElement = document.getElementById('popup') as HTMLElement;
+
+            const handleClickOutside = (event: MouseEvent) => {
+                setTimeout(() => {
+                    if (isPopupOpen.current && popupElementRef.current && !popupElementRef.current.contains(event.target as Node)) {
+                        popupElementRef.current.style.display = 'none';
+                        isPopupOpen.current = false;
+                    }
+                }, 1000)
+        
+            };
+    
+            document.addEventListener('click', handleClickOutside);
+
+            popupElementRef.current = popupElement
+
             const addMarkers = (map: any) => {
-                 // Create custom SVG icon
-                 let customIcon = L.divIcon({
-                    className: 'custom-icon',
-                    html: `<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg21438" viewBox="0 0 158.08 170.43" version="1.0">
+                // Create custom SVG icon
+                let customIcon = (id: string) => L.divIcon({
+                    className: `custom-icon ${id}`,
+                    html: `<div> <svg  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg21438" viewBox="0 0 158.08 170.43" version="1.0">
       <g id="layer1" transform="translate(-70.313 -10.68)">
         <g id="g21428" transform="translate(-21.737 312.57)">
           <g id="g21509" transform="matrix(1.3315 0 0 1.3315 -42.115 49.948)" fill="#3d7ca6">
@@ -32,6 +50,7 @@ export function Map({ clients }: any) {
         </g>
       </g>
     </svg>
+    </div>
     `,
                     iconSize: [32, 32],
                     iconAnchor: [16, 32]
@@ -39,11 +58,48 @@ export function Map({ clients }: any) {
 
 
                 const markers: any = [];
-                
+
                 (window as any).markers?.forEach((marker: any) => map.removeLayer(marker));
 
-                (clients as any)?.forEach(({ latitude, longitude }: any) => {
-                    markers.push(L.marker([latitude, longitude], { icon: customIcon }).addTo(map))
+                (clients as any)?.forEach(({ latitude, longitude }: any, index: number) => {
+                    const marker = L.marker([latitude, longitude], { icon: customIcon(`marker-${index}`) }).addTo(map)
+
+                    marker.on('click', (e: any) => {
+                        isPopupOpen.current = false;
+                        // Set the popup content (you can dynamically change this based on the marker)
+                        popupElementRef.current.innerHTML = `
+                            <div class="bg-[white] w-[400px] h-[300px]">
+                                Lorem ipsum
+                            </div>
+                        `;
+
+                        // Display the popup
+                        popupElementRef.current.style.display = 'block';
+
+                        // Create a Popper.js instance
+                        createPopper(marker._icon, popupElement, {
+                            placement: 'bottom', // Position the popup above the marker
+                            modifiers: [
+                                {
+                                    name: 'offset',
+                                    options: {
+                                        offset: [0, 8], // Adjust offset if needed
+                                    },
+                                },
+                            ],
+                        });
+
+                        isPopupOpen.current = true
+
+                        // Adjust the position of the popup based on the map's position
+                        map.on('move', function () {
+                            createPopper(marker._icon, popupElement, {
+                                placement: 'bottom',
+                            });
+                        });
+
+                    })
+                    markers.push(marker)
                 })
 
                 var group = L.featureGroup(markers);
@@ -51,6 +107,8 @@ export function Map({ clients }: any) {
                 map.fitBounds(group.getBounds());
 
                 (window as any).markers = markers
+
+
             }
 
             if (!(window as any).mapRef) {
@@ -62,11 +120,8 @@ export function Map({ clients }: any) {
                     maxZoom: 19,
                 }).addTo(map);
 
-                console.log(map, 'test');
-
                 (window as any).mapRef = map
 
-               
                 addMarkers(map)
             } else {
                 addMarkers((window as any).mapRef)
@@ -81,11 +136,14 @@ export function Map({ clients }: any) {
             renderMap()
         }
 
+
     }, [clients])
 
 
     return (
         <div id="map" class="h-[400px]">
+            <div id="popup" style="z-index: 40000;">
+            </div>
         </div>
     );
 }
