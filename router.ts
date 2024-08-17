@@ -58,11 +58,11 @@ const getStartAndEndOfMonth = (date: Date) => {
 };
 
 const getStatus = (status: string) => {
-  switch (status) {
-    case "down":
-    case "admin down":
+  switch (true) {
+    case status.includes("down"):
+    case status.includes("admin down"):
       return "down";
-    case "up":
+    case status.includes("up"):
       return "active";
     default:
       return status;
@@ -118,29 +118,6 @@ const getClientsWithStatus = async (
     status === undefined ? true : status === clientStatus
   );
 };
-
-async function readFile(filePath: string) {
-  try {
-    const data = await Deno.readFile(filePath);
-    const decoder = new TextDecoder("utf-8");
-    const text = decoder.decode(data);
-    console.log(text);
-    return text
-  } catch (error) {
-    console.error("Error reading file:", error);
-  }
-}
-async function writeFile(filePath: string, content: string) {
-  try {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(content);
-    await Deno.writeFile(filePath, data);
-    console.log("File written successfully!");
-  } catch (error) {
-    console.error("Error writing file:", error);
-  }
-}
-
 
 // Define a schema that allows any JSON object
 const dynamicObjectSchema = z.record(z.unknown());
@@ -431,13 +408,14 @@ export const appRouter = router({
           throw new Error(`Error checking IP: ${selectError.message}`);
         }
 
+        const cpe_status = {
+          "interface": rest.interface || rest.port,
+          "status": rest.status || rest.link,
+          "protocol": rest.protocol || '',
+          "description": rest.description || rest.desc,
+        }
+
         if (existingCPE !== null) {
-          const cpe_status = {
-            "interface": rest.interface,
-            "status": rest.status || rest.link,
-            "protocol": rest.protocol || '',
-            "description": rest.description,
-          }
           const updated = {
             ...existingCPE,
             ...cpe_status,
@@ -457,7 +435,7 @@ export const appRouter = router({
         } else {
           const updated = {
             ...existingCPE,
-            ...rest,
+            ...cpe_status,
             uuid: crypto.randomUUID(),
             ip,
             created_at: updatedAt,
