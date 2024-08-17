@@ -6,22 +6,6 @@ export const handler = async (
   req: Request,
   _ctx: any,
 ): Promise<Response> => {
-  const { session } = _ctx.state;
-  
-  if (!Boolean(session?.get("authenticated"))) {
-    const headers = new Headers();
-    
-    headers.set("location", "/login");
-  
-    return new Response(null, {
-      status: 303, // See Other
-      headers,
-    });
-      
-  } 
-
-
-
   const trpcRes = await fetchRequestHandler({
     endpoint: "/api/trpc",
     req,
