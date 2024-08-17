@@ -32,9 +32,9 @@ export function Map({ clients }: any) {
             popupElementRef.current = popupElement;
 
             const addMarkers = (map: any) => {
-                let customIcon = (id: string) => L.divIcon({
+                let customIcon = (id: string, status: string) => L.divIcon({
                     className: `custom-icon ${id}`,
-                    html: `<div> <svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg21438" viewBox="0 0 158.08 170.43" version="1.0">
+                    html: `<div class="flex relative"><div class="absolute top-[-10px] right-[-2px] rounded-full w-[10px] h-[10px] ${status}"></div> <svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg21438" viewBox="0 0 158.08 170.43" version="1.0">
       <g id="layer1" transform="translate(-70.313 -10.68)">
         <g id="g21428" transform="translate(-21.737 312.57)">
           <g id="g21509" transform="matrix(1.3315 0 0 1.3315 -42.115 49.948)" fill="#3d7ca6">
@@ -70,7 +70,8 @@ export function Map({ clients }: any) {
                     status,
                     ip
                 }: any, index: number) => {
-                    const marker = L.marker([latitude, longitude], { icon: customIcon(`marker-${index}`) }).addTo(map)
+                    const marker = L.marker([latitude, longitude], { icon: customIcon(`marker-${index}`, 
+                        status === 'active' ? 'bg-green-500' : status === 'dowm' ? 'bg-[red]' : 'bg-gray-500') }).addTo(map)
 
                     marker.on('click', (e: any) => {
                         setTimeout(() => {
