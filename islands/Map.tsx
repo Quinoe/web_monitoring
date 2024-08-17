@@ -2,39 +2,39 @@ import { IS_BROWSER } from "$fresh/runtime.ts";
 import { consumeToken } from "$std/media_types/_util.ts";
 import { useEffect, useRef } from "preact/hooks";
 import { createPopper } from 'npm:@popperjs/core'
+import { getStatus } from "./OverviewTable.tsx";
+import { render } from 'preact-render-to-string';
 
 export function Map({ clients }: any) {
     if (!IS_BROWSER) return null
 
     const isPopupOpen = useRef(false)
     const popupElementRef = useRef<any>(null)
+    const popperInstanceRef = useRef<any>(null)
 
     useEffect(() => {
+
+        const handleOutsideClick = (event: MouseEvent) => {
+            if (
+                isPopupOpen.current &&
+                popupElementRef.current &&
+                !popupElementRef.current.contains(event.target as Node)
+            ) {
+                popupElementRef.current.style.display = 'none';
+                isPopupOpen.current = false;
+            }
+        };
 
         const renderMap = async () => {
             const L = (window as any).L;
 
             var popupElement = document.getElementById('popup') as HTMLElement;
-
-            const handleClickOutside = (event: MouseEvent) => {
-                setTimeout(() => {
-                    if (isPopupOpen.current && popupElementRef.current && !popupElementRef.current.contains(event.target as Node)) {
-                        popupElementRef.current.style.display = 'none';
-                        isPopupOpen.current = false;
-                    }
-                }, 1000)
-        
-            };
-    
-            document.addEventListener('click', handleClickOutside);
-
-            popupElementRef.current = popupElement
+            popupElementRef.current = popupElement;
 
             const addMarkers = (map: any) => {
-                // Create custom SVG icon
                 let customIcon = (id: string) => L.divIcon({
                     className: `custom-icon ${id}`,
-                    html: `<div> <svg  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg21438" viewBox="0 0 158.08 170.43" version="1.0">
+                    html: `<div> <svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg21438" viewBox="0 0 158.08 170.43" version="1.0">
       <g id="layer1" transform="translate(-70.313 -10.68)">
         <g id="g21428" transform="translate(-21.737 312.57)">
           <g id="g21509" transform="matrix(1.3315 0 0 1.3315 -42.115 49.948)" fill="#3d7ca6">
@@ -56,94 +56,125 @@ export function Map({ clients }: any) {
                     iconAnchor: [16, 32]
                 });
 
-
                 const markers: any = [];
 
                 (window as any).markers?.forEach((marker: any) => map.removeLayer(marker));
 
-                (clients as any)?.forEach(({ latitude, longitude }: any, index: number) => {
+                (clients as any)?.forEach(({ 
+                    latitude, 
+                    longitude, 
+                    client_name, 
+                    cpe, 
+                    port, 
+                    address,
+                    status,
+                    ip
+                }: any, index: number) => {
                     const marker = L.marker([latitude, longitude], { icon: customIcon(`marker-${index}`) }).addTo(map)
 
                     marker.on('click', (e: any) => {
-                        isPopupOpen.current = false;
-                        // Set the popup content (you can dynamically change this based on the marker)
-                        popupElementRef.current.innerHTML = `
-                            <div class="bg-[white] w-[400px] h-[300px]">
-                                Lorem ipsum
-                            </div>
-                        `;
+                        setTimeout(() => {
+                            isPopupOpen.current = false;
 
-                        // Display the popup
-                        popupElementRef.current.style.display = 'block';
+                            const id = `clients-${index}`
+                            popupElementRef.current.innerHTML = `
+                                <div id="${id}" class="bg-[white] rounded-md flex justify-between w-[300px] p-[10px] h-[fit-content]">
+                                    <div class="flex flex-col gap-[8px]">
+                                        <div class="max-w-[200px]">
+                                          <strong>
+                                            ${client_name}
+                                        </strong>
 
-                        // Create a Popper.js instance
-                        createPopper(marker._icon, popupElement, {
-                            placement: 'bottom', // Position the popup above the marker
-                            modifiers: [
-                                {
-                                    name: 'offset',
-                                    options: {
-                                        offset: [0, 8], // Adjust offset if needed
-                                    },
-                                },
-                            ],
-                        });
-
-                        isPopupOpen.current = true
-
-                        // Adjust the position of the popup based on the map's position
-                        map.on('move', function () {
-                            createPopper(marker._icon, popupElement, {
+                                        </div>
+                                        <div class="flex gap-[4px]">
+                                            <div>
+                                                ${cpe}
+                                            </div>
+                                          
+                                          
+                                        </div>
+                                        <div class="flex gap-[8px]">
+                                              <div>
+                                                ${ip}
+                                            </div>
+                                            <div>
+                                                -
+                                            </div<
+                                            <div>
+                                                ${port}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            ${address}
+                                        </div>
+                                    </div>  
+                                    <div>
+                                    <div>
+                                        ${render(getStatus(status) as any)}
+                                    </div>
+                                
+                                </div>
+                            `;
+    
+                            popupElementRef.current.style.display = 'block';
+    
+                            popperInstanceRef.current = createPopper(marker._icon, popupElement, {
                                 placement: 'bottom',
+                                modifiers: [
+                                    {
+                                        name: 'offset',
+                                        options: {
+                                            offset: [0, 8],
+                                        },
+                                    },
+                                ],
                             });
-                        });
+    
+                            isPopupOpen.current = true;
+    
+                            map.on('move', function () {
+                                popperInstanceRef.current?.update();
+                            });
+                        }, 200)
+                     
 
                     })
                     markers.push(marker)
                 })
 
                 var group = L.featureGroup(markers);
-
                 map.fitBounds(group.getBounds());
-
-                (window as any).markers = markers
-
-
+                (window as any).markers = markers;
             }
 
             if (!(window as any).mapRef) {
-                // Initialize the map
                 const map = L.map('map').setView([51.505, -0.09], 13);
-
-                // Add a tile layer to the map
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                 }).addTo(map);
 
-                (window as any).mapRef = map
-
-                addMarkers(map)
+                (window as any).mapRef = map;
+                addMarkers(map);
             } else {
-                addMarkers((window as any).mapRef)
+                addMarkers((window as any).mapRef);
             }
-
-
         }
-
-
 
         if ((clients as any)?.length) {
-            renderMap()
+            renderMap();
+            document.addEventListener('click', handleOutsideClick);
         }
 
+        return () => {
+            document.removeEventListener('click', handleOutsideClick);
+            popperInstanceRef.current?.destroy();
+        };
 
     }, [clients])
 
-
     return (
-        <div id="map" class="h-[400px]">
-            <div id="popup" style="z-index: 40000;">
-            </div>
+        <div id="map"  class="h-[400px]">
+            <div id="popup" style="z-index: 40000;"></div>
         </div>
     );
 }

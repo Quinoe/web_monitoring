@@ -74,7 +74,7 @@ export function ClinetList({ clients }: any) {
                 style={{
                     flexDirection: "column",
                 }}
-                class="border-[1px] flex border-[#ccc] flex-1 bg-[white] w-full h-full rounded-lg"
+                class="border-[1px] flex border-[#ccc] flex-1 bg-[white] w-full  rounded-lg"
             >
                 {
                     (clients as ClientTypeWithStatus[]).map((client) => {
@@ -84,9 +84,10 @@ export function ClinetList({ clients }: any) {
                                     class="flex"
                                     style={{
                                         flexDirection: "column",
+                                        gap: '8px'
                                     }}
                                 >
-                                    <div>
+                                    <div className="max-w-[200px]">
                                         <strong>
                                             {client.client_name}
                                         </strong>
@@ -95,8 +96,14 @@ export function ClinetList({ clients }: any) {
                                         <div>
                                             {client.cpe}
                                         </div>
+
+                                    </div>
+                                    <div class="flex gap-[8px]">
                                         <div>
                                             {client.ip}
+                                        </div>
+                                        <div>
+                                            -
                                         </div>
                                         <div>
                                             {client.port}
@@ -134,10 +141,10 @@ export function DashboardPage() {
 
     return (
         <>
-            <div className="w-[75%] bg-[transparent] h-[100%]">
+            <div className="w-[65%] bg-[transparent] h-[100%]">
                 <Map clients={clients} />
             </div>
-            <div className="w-[25%] ">
+            <div className="w-[35%] ">
                 <ClinetList clients={clients} />
             </div>
         </>
