@@ -22,9 +22,11 @@ export const handler = async (req: any, _ctx: any): Response => {
                 const reader = part.body.getReader();
 
 
-                const chunks = []
+                const chunks: any[] = []
 
                 let done = false;
+
+                console.log(chunks)
 
                 // Read from the stream and write to the file
                 while (!done) {
@@ -51,6 +53,7 @@ export const handler = async (req: any, _ctx: any): Response => {
 
         }
 
+        console.log(sheetName, excelData)
         if (excelData) {
             const columns = [{
                 excel_name: 'IP',

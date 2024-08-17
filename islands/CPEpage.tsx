@@ -63,28 +63,133 @@ export function CPEPage() {
                 <div>
                     <button
                         onClick={() => {
-                            (document.getElementById("my_modal_2") as any)?.classList.add('modal-open')
+                            (document.getElementById("import_cpe_modal") as any)?.classList.add('modal-open')
 
                             setTimeout(() => {
-                                document.querySelector('#my_modal_2')?.appendChild(document.querySelector('div[role="calendar"]') as HTMLElement);
+                                document.querySelector('#import_cpe_modal')?.appendChild(document.querySelector('div[role="calendar"]') as HTMLElement);
+                            }, 10);
+
+                        }
+                        }
+                        class="pl-[20px] mr-[10px] rounded-lg pr-[20px] pt-[4px] pb-[4px] bg-[transparent] text-[#60A5FA] border-[1px] border-[#60A5FA]"
+                    >
+                        Import CPE
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            (document.getElementById("add_cpe_modal") as any)?.classList.add('modal-open')
+
+                            setTimeout(() => {
+                                document.querySelector('#add_cpe_modal')?.appendChild(document.querySelector('div[role="calendar"]') as HTMLElement);
                             }, 10);
 
                         }
                         }
                         class="pl-[20px] rounded-lg pr-[20px] pt-[4px] pb-[4px] bg-[#60A5FA] text-[white]"
                     >
-                        Add client
+                        Add CPE
                     </button>
 
-                    <div id="my_modal_2" className="modal">
+                    <div id="import_cpe_modal" className="modal">
+                        <div className="bg-[white] w-5/12 h-[fit-content] overflow-y-auto  rounded-xl p-[30px]">
+                            <h4 class="text-xl mb-[20px]">
+                                Import CPE
+                            </h4>
+                            <div class="flex flex-col h-[80%]" id="form-import-cpe">
+                                <div class="flex flex-col gap-[20px]">
+                                    <div class="flex gap-[10px] items-center">
+                                        <label>
+                                            Sheet Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Type here"
+                                            name="sheet_name"
+                                            disabled={isEditSession}
+                                            className="input input-bordered w-full max-w-xs"
+                                        />
+                                    </div>
+                                    <div class="flex gap-[10px] items-center">
+                                        <label>
+                                            File
+                                        </label>
+                                        <input
+                                            type="file"
+                                            name="files"
+                                            disabled={isEditSession}
+                                            class="ml-[65px]"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-[20px] mt-[30px]">
+                                    <button className="btn" onClick={() => {
+                                        const dialog = document.getElementById('import_cpe_modal');
+
+                                        dialog?.classList.remove('modal-open');
+                                    }}>Close</button>
+
+                                    <button class="btn btn-primary" onClick={async () => {
+                                        const values: any = {}
+
+                                        document.querySelectorAll('#form-import-cpe  input')
+                                            .forEach((el: any) => {
+                                                if (el.name === 'files') {
+                                                    values[el.name as keyof ClientType] = el.files[0]
+
+                                                } else {
+                                                    values[el.name as keyof ClientType] = el.value
+
+                                                }
+                                            })
+
+                                        const formData = new FormData();
+
+                                        Object.keys(values).forEach((key) => {
+                                            formData.append(key, values[key])
+                                        })
+
+                                        try {
+                                            // Send the file using Fetch API
+                                            const response = await fetch('/api/import/cpe', {
+                                                method: 'POST',
+                                                body: formData
+                                            });
+
+                                            if (response.ok) {
+                                                await response.json();
+                                                alert('File uploaded successfully!');
+                                                const dialog = document.getElementById('import_cpe_modal');
+
+                                                dialog?.classList.remove('modal-open');
+
+                                                fetchPosts()
+
+                                            } else {
+                                                alert('File upload failed.');
+                                            }
+                                        } catch (error) {
+                                            console.error('Error:', error);
+                                            alert('An error occurred while uploading the file.');
+                                        }
+
+                                    }}>
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="add_cpe_modal" className="modal">
                         <div className="bg-[white] w-8/12 h-[500px] overflow-y-auto  rounded-xl p-[30px]">
                             <h4 class="text-xl mb-[20px]">
-                                Add new client
+                                Add new CPE
                             </h4>
                             <div class="flex justify-between" id="form-client">
                                 <div className="flex flex-col gap-[20px] flex-1">
-                             
-                                <div class="flex flex-col">
+                                    <div class="flex flex-col">
                                         <label>
                                             IP
                                         </label>
@@ -126,14 +231,14 @@ export function CPEPage() {
                                         />
                                     </div>
                                 </div>
-                        
+
                             </div>
 
 
                             <div className="modal-action">
                                 <button className="btn" onClick={() => {
                                     setSelectedClient({})
-                                    const dialog = document.getElementById('my_modal_2');
+                                    const dialog = document.getElementById('add_cpe_modal');
 
                                     dialog?.classList.remove('modal-open');
                                 }}>Close</button>
@@ -142,9 +247,9 @@ export function CPEPage() {
                                     const values: any = {}
 
                                     document.querySelectorAll('#form-client  input')
-                                    .forEach((el: any) => {
-                                        values[el.name as keyof ClientType] = el.value
-                                    })
+                                        .forEach((el: any) => {
+                                            values[el.name as keyof ClientType] = el.value
+                                        })
 
                                     if (isEditSession) {
                                         trpc["cpe.update"].mutate({ ...selectedClient, ...values })
@@ -152,7 +257,7 @@ export function CPEPage() {
                                                 () => {
                                                     fetchPosts()
                                                     setSelectedClient({})
-                                                    const dialog = document.getElementById('my_modal_2');
+                                                    const dialog = document.getElementById('add_cpe_modal');
 
                                                     dialog?.classList.remove('modal-open');
                                                 }
@@ -163,7 +268,7 @@ export function CPEPage() {
                                                 () => {
                                                     fetchPosts()
                                                     setSelectedClient({})
-                                                    const dialog = document.getElementById('my_modal_2');
+                                                    const dialog = document.getElementById('add_cpe_modal');
 
                                                     dialog?.classList.remove('modal-open');
                                                 }
@@ -213,10 +318,10 @@ export function CPEPage() {
                                                 <button onClick={() => {
                                                     setSelectedClient(data);
                                                     setEditSession(true);
-                                                    (document.getElementById("my_modal_2") as any)?.classList.add('modal-open')
+                                                    (document.getElementById("add_cpe_modal") as any)?.classList.add('modal-open')
 
                                                     setTimeout(() => {
-                                                        document.querySelector('#my_modal_2')?.appendChild(document.querySelector('div[role="calendar"]') as HTMLElement);
+                                                        document.querySelector('#add_cpe_modal')?.appendChild(document.querySelector('div[role="calendar"]') as HTMLElement);
                                                     }, 10);
 
                                                 }} class="bg-[transparent] w-[20px] h-[20px]">

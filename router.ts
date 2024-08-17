@@ -210,13 +210,6 @@ export const appRouter = router({
       }
     }),
   "clients.aggregate": publicProceducre.query(async () => {
-
-    await writeFile("./example.txt", `Hello, Deno! ${Date.now()}`);
-
-
-    // Call the function
-    const text = await readFile("./example.txt");
-
     const currentMonth = new Date();
     const lastMonth = subMonths(currentMonth, 1);
 
@@ -225,8 +218,6 @@ export const appRouter = router({
     const { start: lastMonthStart, end: lastMonthEnd } = getStartAndEndOfMonth(
       lastMonth,
     );
-
-
 
     const currentMonthData = await supabase
       .from("clients")
@@ -273,7 +264,6 @@ export const appRouter = router({
       totalClient: totalClients.data?.length ?? 0,
       totalActiveClients: activeClients.length ?? 0,
       totalInactiveClients: downClients.length ?? 0,
-      text
     };
   }),
   "clients.create": publicProceducre

@@ -53,7 +53,7 @@ export function ClientsPage() {
     const [aggregate, setAggregate] = useState<AggregateType | null>(null)
     const [cpe, setCpe] = useState<CPEType | null>(null)
     const [cpeValue, setCpeValue] = useState('')
-    
+
 
     const columns = Object.keys(clientSchemaObj).map((name) => {
         return {
@@ -66,12 +66,15 @@ export function ClientsPage() {
     const fetchAggregate = () => trpc["clients.aggregate"].query().then(setAggregate);
     const fetchCpeList = () => trpc["cpe.get"].query().then(setCpe);
 
-
-    useEffect(() => {
-        (window).$('#datepicker').datepicker()
+    const refetch = () => {
         fetchPosts()
         fetchAggregate()
         fetchCpeList()
+    }
+
+    useEffect(() => {
+        (window).$('#datepicker').datepicker()
+        refetch()
     }, [])
 
     return (
@@ -81,9 +84,24 @@ export function ClientsPage() {
                     <div className="text-xl">
                         <strong>Client list</strong>
                     </div>
-                    <div class="text-lg">More than {aggregate?.difference} new clients</div>
                 </div>
                 <div>
+                    <button
+                        onClick={() => {
+                            (document.getElementById("import_client_modal") as any)?.classList.add('modal-open')
+
+                            setTimeout(() => {
+                                document.querySelector('#import_client_modal')?.appendChild(document.querySelector('div[role="calendar"]') as HTMLElement);
+                            }, 10);
+
+                        }
+                        }
+                        class="pl-[20px] mr-[10px] rounded-lg pr-[20px] pt-[4px] pb-[4px] bg-[transparent] text-[#60A5FA] border-[1px] border-[#60A5FA]"
+                    >
+                        Import Client
+                    </button>
+
+
                     <button
                         onClick={() => {
                             (document.getElementById("my_modal_2") as any)?.classList.add('modal-open')
@@ -98,6 +116,97 @@ export function ClientsPage() {
                     >
                         Add client
                     </button>
+
+                    <div id="import_client_modal" className="modal">
+                        <div className="bg-[white] w-5/12 h-[fit-content] overflow-y-auto  rounded-xl p-[30px]">
+                            <h4 class="text-xl mb-[20px]">
+                                Import Client
+                            </h4>
+                            <div class="flex flex-col h-[80%]" id="form-import-cpe">
+                                <div class="flex flex-col gap-[20px]">
+                                    <div class="flex gap-[10px] items-center">
+                                        <label>
+                                            Sheet Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Type here"
+                                            name="sheet_name"
+                                            disabled={isEditSession}
+                                            className="input input-bordered w-full max-w-xs"
+                                        />
+                                    </div>
+                                    <div class="flex gap-[10px] items-center">
+                                        <label>
+                                            File
+                                        </label>
+                                        <input
+                                            type="file"
+                                            name="files"
+                                            disabled={isEditSession}
+                                            class="ml-[65px]"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-[20px] mt-[30px]">
+                                    <button className="btn" onClick={() => {
+                                        const dialog = document.getElementById('import_client_modal');
+
+                                        dialog?.classList.remove('modal-open');
+                                    }}>Close</button>
+
+                                    <button class="btn btn-primary" onClick={async () => {
+                                        const values: any = {}
+
+                                        document.querySelectorAll('#form-import-cpe  input')
+                                            .forEach((el: any) => {
+                                                if (el.name === 'files') {
+                                                    values[el.name as keyof ClientType] = el.files[0]
+
+                                                } else {
+                                                    values[el.name as keyof ClientType] = el.value
+
+                                                }
+                                            })
+
+                                        const formData = new FormData();
+
+                                        Object.keys(values).forEach((key) => {
+                                            formData.append(key, values[key])
+                                        })
+
+                                        try {
+                                            // Send the file using Fetch API
+                                            const response = await fetch('/api/import/clients', {
+                                                method: 'POST',
+                                                body: formData
+                                            });
+
+                                            if (response.ok) {
+                                                await response.json();
+                                                alert('File uploaded successfully!');
+                                                const dialog = document.getElementById('import_client_modal');
+
+                                                dialog?.classList.remove('modal-open');
+
+                                                refetch()
+
+                                            } else {
+                                                alert('File upload failed.');
+                                            }
+                                        } catch (error) {
+                                            console.error('Error:', error);
+                                            alert('An error occurred while uploading the file.');
+                                        }
+
+                                    }}>
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div id="my_modal_2" className="modal">
                         <div className="bg-[white] w-8/12 h-[500px] overflow-y-auto  rounded-xl p-[30px]">
@@ -153,7 +262,7 @@ export function ClientsPage() {
                                         </label>
                                         <input class="hidden" name="cpe" type="text" value={cpeValue} />
                                         <details className="dropdown " id="cpe_placeholder" >
-                                            <summary className="btn m-1 w-[320px] !bg-white !border-[1px] !border-[#ccc]">{!cpeValue ?  'Choose CPE' : cpeValue}</summary>
+                                            <summary className="btn m-1 w-[320px] !bg-white !border-[1px] !border-[#ccc]">{!cpeValue ? 'Choose CPE' : cpeValue}</summary>
                                             <ul className="menu dropdown-content bg-base-100 rounded-box z-[1] w-[320px] p-2 shadow">
                                                 {
                                                     cpe?.map(({ cpe_name }) => {
@@ -164,7 +273,7 @@ export function ClientsPage() {
                                                             }}>
                                                                 <a>{cpe_name}</a>
                                                             </li>
-                                                          )
+                                                        )
                                                     })
                                                 }
                                             </ul>
