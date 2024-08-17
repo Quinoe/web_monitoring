@@ -142,6 +142,12 @@ async function writeFile(filePath: string, content: string) {
 }
 
 
+// Define a schema that allows any JSON object
+const dynamicObjectSchema = z.record(z.unknown());
+
+// Define the schema for an array of such objects
+const updateSchema = z.array(dynamicObjectSchema);
+
 export const appRouter = router({
   "clients.get": publicProceducre.query(async () => {
     const { data: clientsData, error: clientsError } = await supabase
@@ -405,7 +411,7 @@ export const appRouter = router({
       return data;
     }),
   "cpe_status.update": publicProceducre
-    .input(updateCPEsSchema)
+    .input(updateSchema)
     .mutation(async ({ input }) => {
       const updatedAt = Date.now();
 
@@ -426,9 +432,15 @@ export const appRouter = router({
         }
 
         if (existingCPE !== null) {
+          const cpe_status = {
+            "interface": rest.interface,
+            "status": rest.status || rest.link,
+            "protocol": rest.protocol || '',
+            "description": rest.description,
+          }
           const updated = {
             ...existingCPE,
-            ...rest,
+            ...cpe_status,
             ip,
             updated_at: updatedAt,
           };
