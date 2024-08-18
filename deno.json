@@ -30,9 +30,9 @@
     "preact/": "https://esm.sh/preact@10.19.6/",
     "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
     "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
-    "@trpc/server": "https://esm.sh/v119/@trpc/server@10.34.0",
-    "@trpc/server/": "https://esm.sh/v119/@trpc/server@10.34.0/",
-    "@trpc/client": "https://esm.sh/v119/@trpc/client@10.34.0",
+    "@trpc/server": "https://esm.sh/v119/@trpc/server@10.33.1",
+    "@trpc/server/": "https://esm.sh/v119/@trpc/server@10.33.1/",
+    "@trpc/client": "https://esm.sh/v119/@trpc/client@10.33.1",
     "zod": "https://deno.land/x/zod@v3.21.4/mod.ts",
     "preact-render-to-string": "https://esm.sh/preact-render-to-string"
   },

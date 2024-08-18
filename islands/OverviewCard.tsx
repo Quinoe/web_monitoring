@@ -10,6 +10,8 @@ type RouterOutput = inferRouterOutputs<AppRouter>;
 
 type PostAggregateOutput = RouterOutput['clients.aggregate'];
 
+export const filterType = signal<'active' | 'down' | ''>('')
+
 export function OverviewCard() {
     const [aggregate, setAggregate] = useState<PostAggregateOutput>()
     const statuses = [
@@ -36,6 +38,7 @@ export function OverviewCard() {
             description: "",
             iconBackground: "#FA5A7D",
             count: aggregate?.totalInactiveClients,
+            type: 'down'
         },
         {
             key: "total_status_active",
@@ -45,22 +48,15 @@ export function OverviewCard() {
             description: "",
             iconBackground: "#3CD856",
             count: aggregate?.totalActiveClients,
-        },
-        {
-            key: "total_new_clients",
-            icon: "fa-building",
-            background: "#F3E8FF",
-            title: "New clients",
-            description: "",
-            iconBackground: "#BF83FF",
-            count: aggregate?.currentMonthTotal,
-        },
+            type: 'active'
+        }
     ] as any[];
 
 
-    const fetchClientAggregate = () => trpc["clients.aggregate"].query().then((data) => {
-        setAggregate(data)
-    });
+    const fetchClientAggregate = () =>
+        trpc["clients.aggregate"].query().then((data) => {
+            setAggregate(data)
+        });
 
     useEffect(() => {
         fetchClientAggregate()
@@ -79,36 +75,48 @@ export function OverviewCard() {
                                 background,
                                 count,
                                 icon,
-                                description,
+                                type,
+                                key
                             }) => {
                                 return (
                                     <div
-                                        class="w-[130px] h-[200px] flex justify-between p-[10px] rounded-lg"
+                                        class="w-[fit-content] h-[fit-content] items-center rounded-full gap-[8px] flex justify-between p-[10px] rounded-lg"
                                         style={{
-                                            flexDirection: "column",
                                             background: background,
+                                            cursor: 'pointer',
+                                            border: filterType.value === 'active'
+                                                || filterType.value === 'down' ? `1px solid ${filterType.value === type ? 'blue' : 'transparent'}` : ''
+                                        }}
+                                        onClick={() => {
+                                            if (type) {
+                                                if (filterType.value === type) {
+                                                    filterType.value = ''
+                                                } else {
+                                                    filterType.value = type
+                                                }
+                                            }
+
+                                            if (key === 'total_clients') {
+                                                window.location.href = '/clients'
+                                            }
                                         }}
                                     >
                                         <div style={{
                                             background: iconBackground
-                                        }} class="rounded-full  w-[32px] h-[32px] flex justify-center items-center">
+                                        }} class="rounded-full  w-[24px] h-[24px] flex justify-center items-center">
                                             {
                                                 (typeof icon === 'string' && icon.length) ? (
-                                                    <i class={`fa ${icon} text-white`}></i>
+                                                    <i class={`fa ${icon} text-sm text-white`}></i>
                                                 ) : (
                                                     icon
                                                 )
                                             }
-
                                         </div>
-                                        <div className="text-2xl font-bold">
+                                        <div className="text-lg font-bold">
                                             {count}
                                         </div>
                                         <div className="text-md">
                                             {title}
-                                        </div>
-                                        <div className="text-xs">
-                                            {description}
                                         </div>
                                     </div>
                                 );

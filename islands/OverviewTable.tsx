@@ -1,8 +1,11 @@
 import { useEffect, useState } from "preact/hooks";
 import { trpc } from "../utils/trpc.ts";
 import type { inferRouterOutputs } from '@trpc/server';
+import { effect } from '@preact/signals'
 import type { AppRouter } from '../router.ts';
-import { ClientTypeWithStatus } from "../models/Clients.ts";
+import { ClientTypeWithStatus, query } from "../models/Clients.ts";
+import { filterType } from "./OverviewCard.tsx";
+import { IS_BROWSER } from "$fresh/runtime.ts";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
@@ -35,8 +38,29 @@ export const getStatus = (status: string) => {
 }
 
 export function OverviewTable() {
+
+
+    if (!IS_BROWSER) {
+        return null
+    }
+
+    const [filter, setFilter] = useState<'active' | 'down' | ''>('')
+
     const [clients, setClients] = useState<PostCreateOutput>()
-    const fetchPosts = (query: string) => trpc["clients.search"].query({ query, limit: 3 }).then(setClients);
+    const fetchPosts = (query: string, type?: 'active' | 'down' | '') => trpc["clients.search"].mutate({
+        query,
+        type
+    }).then((data) => {
+        setClients(data)
+    });
+
+    effect(() => {
+        setFilter(filterType.value)
+    })
+
+    useEffect(() => {
+        fetchPosts('', filter)
+    }, [filter])
 
     useEffect(() => {
         fetchPosts('')
@@ -46,7 +70,7 @@ export function OverviewTable() {
         <div class="flex flex-col">
             <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 sm:px-6 lg:px-8">
-                    <div class="overflow-hidden">
+                    <div class="overflow-y-auto max-h-[250px]">
                         <table class="min-w-full text-center text-sm font-light text-surface dark:text-white">
                             <thead class="border-b border-neutral-200 bg-neutral-50 font-medium dark:border-white/10 dark:text-neutral-800">
                                 <tr>
@@ -72,7 +96,7 @@ export function OverviewTable() {
                                                     {client_name}
                                                 </td>
                                                 <td class="whitespace-nowrap  px-6 py-4">
-                                                   {last_updated_status}
+                                                    {last_updated_status}
                                                 </td>
                                                 <td class="whitespace-nowrap  px-6 py-4">
                                                     {getStatus(status)}

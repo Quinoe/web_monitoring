@@ -129,7 +129,7 @@ export function ClinetList({ clients }: any) {
 export function DashboardPage() {
     const [clients, setClients] = useState<PostCreateOutput>([]);
 
-    const fetchPosts = (query: string) => trpc["clients.search"].query({ query }).then(setClients);
+    const fetchPosts = (query: string) => trpc["clients.search"].mutate({ query }).then(setClients);
 
     useEffect(() => {
         fetchPosts('')

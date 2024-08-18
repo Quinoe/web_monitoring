@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import {
   clientSchema,
-  ClientsSchema,
   ClientsSchemaWithStatus,
   ClientType,
   ClientTypeWithStatus,
@@ -11,7 +10,7 @@ import {
 import { Client } from "https://deno.land/x/mysql/mod.ts";
 import { createClient } from "npm:@supabase/supabase-js";
 import { endOfMonth, startOfMonth, subMonths } from "npm:date-fns";
-import { createCpeSchema, updateCPEsSchema } from "./models/CPE.ts";
+import { createCpeSchema } from "./models/CPE.ts";
 
 const t = initTRPC.create();
 const router = t.router;
@@ -58,12 +57,13 @@ const getStartAndEndOfMonth = (date: Date) => {
 };
 
 const getStatus = (status: string) => {
+  console.log(status.toLowerCase().includes("up"), status)
   switch (true) {
-    case status.includes("down"):
-    case status.includes("admin down"):
-      return "down";
-    case status.includes("up"):
+    case status.toLowerCase().includes("up"):
       return "active";
+    case status.toLowerCase().includes("down"):
+    case status.toLowerCase().includes("admin down"):
+      return "down";
     default:
       return status;
   }
@@ -98,7 +98,10 @@ const getClientsWithStatus = async (
         .select("*")
         .eq("ip", cpe.ip)
         .eq("interface", rest.port)
-        .single();
+
+      let latestStatus = (cpeStatus ?? [])?.sort((a, b) => {
+        return b.updated_at - a.updated_at
+      })[0]
 
       return {
         ...rest,
@@ -106,9 +109,9 @@ const getClientsWithStatus = async (
         latitude: Number(rest.latitude),
         longitude: Number(rest.longitude),
         status: getStatus(
-          cpeError || cpeStatusError ? "" : cpeStatus.status,
+          cpeError || cpeStatusError ? "" : (latestStatus?.status ?? ''),
         ),
-        last_updated_status: cpeStatus?.updated_at ? new Date(cpeStatus.updated_at).toLocaleString() : '',
+        last_updated_status: latestStatus?.updated_at ? new Date(latestStatus?.updated_at).toLocaleString() : '',
         ip: cpe.ip
       };
     }),
@@ -157,9 +160,10 @@ export const appRouter = router({
     .input(z.object({
       query: z.string(),
       limit: z.number().optional(),
+      type: z.string().optional()
     }))
-    .query(async ({ input }) => {
-      const { query, limit } = input;
+    .mutation(async ({ input }) => {
+      const { query, limit, type } = input;
 
       const { data, error } = limit
         ? await supabase
@@ -180,9 +184,16 @@ export const appRouter = router({
 
       const clients = await getClientsWithStatus(data);
 
+      const list = clients.filter((client) => {
+        if (type) {
+          return client.status === type
+        }
+        return true
+      })
+
       try {
         const validatedClients = ClientsSchemaWithStatus.parse(
-          clients,
+          list
         ) as any as ClientTypeWithStatus[];
         return validatedClients;
       } catch (e) {
