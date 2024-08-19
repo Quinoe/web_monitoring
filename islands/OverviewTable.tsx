@@ -74,12 +74,32 @@ export function OverviewTable() {
                         <table class="min-w-full text-center text-sm font-light text-surface dark:text-white">
                             <thead class="border-b border-neutral-200 bg-neutral-50 font-medium dark:border-white/10 dark:text-neutral-800">
                                 <tr>
-                                    <th scope="col" class=" px-6 py-4">ID Pelanggan</th>
-                                    <th scope="col" class=" px-6 py-4">
+                                    <th style={{
+                                            position: 'sticky',
+                                            top: '0px',  /* 0px if you don't have a navbar, but something is required */
+                                            width: '100%',
+                                            background: '#F3F6F9'
+                                        }} scope="col" class=" px-6 py-4">ID Pelanggan</th>
+                                    <th style={{
+                                            position: 'sticky',
+                                            top: '0px',  /* 0px if you don't have a navbar, but something is required */
+                                            width: '100%',
+                                            background: '#F3F6F9'
+                                        }} scope="col" class=" px-6 py-4">
                                         Client name
                                     </th>
-                                    <th scope="col" class=" px-6 py-4">Last downtime</th>
-                                    <th scope="col" class=" px-6 py-4">
+                                    <th style={{
+                                            position: 'sticky',
+                                            top: '0px',  /* 0px if you don't have a navbar, but something is required */
+                                            width: '100%',
+                                            background: '#F3F6F9'
+                                        }} scope="col" class=" px-6 py-4">Last status</th>
+                                    <th style={{
+                                            position: 'sticky',
+                                            top: '0px',  /* 0px if you don't have a navbar, but something is required */
+                                            width: '100%',
+                                            background: '#F3F6F9'
+                                        }} scope="col" class=" px-6 py-4">
                                         Status
                                     </th>
                                 </tr>

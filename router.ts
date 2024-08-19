@@ -57,7 +57,6 @@ const getStartAndEndOfMonth = (date: Date) => {
 };
 
 const getStatus = (status: string) => {
-  console.log(status.toLowerCase().includes("up"), status)
   switch (true) {
     case status.toLowerCase().includes("up"):
       return "active";
@@ -100,8 +99,10 @@ const getClientsWithStatus = async (
         .eq("interface", rest.port)
 
       let latestStatus = (cpeStatus ?? [])?.sort((a, b) => {
-        return b.updated_at - a.updated_at
+        return (b.updated_at ?? 0) - (a.updated_at ?? 0)
       })[0]
+
+      console.log(latestStatus, cpeError, cpeStatusError)
 
       return {
         ...rest,
@@ -183,6 +184,8 @@ export const appRouter = router({
       }
 
       const clients = await getClientsWithStatus(data);
+
+      console.log(clients, 'test')
 
       const list = clients.filter((client) => {
         if (type) {

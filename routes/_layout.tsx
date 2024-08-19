@@ -26,6 +26,8 @@ export default function Layout({ Component, route }: PageProps) {
             {
                 !isLoginPage && (
                     <Sidebar>
+                            <img src="https://media.licdn.com/dms/image/C5622AQG-tb--hN3jAw/feedshare-shrink_800/0/1675391537773?e=2147483647&v=beta&t=cYvUPHZUlhYfL0xGODf4ZJfSpQjHqnWUHPxWMErNheo" alt="icon" />
+
                         <div class="mt-[64px]">
                         <Menu currentRoute={route} />
 
@@ -36,8 +38,9 @@ export default function Layout({ Component, route }: PageProps) {
 
             {
                 !isLoginPage && (
-                    <div class="flex flex-column w-full h-[100vh] ml-[160px] overlow--y-auto" style={{
-                        flexDirection: 'column'
+                    <div class="flex flex-column w-full h-[100vh] ml-[160px] overlow--y-auto w-[88%]" style={{
+                        flexDirection: 'column',
+                        width: '88%'
                     }}>
                         <Navbar>
                             <div class="flex w-full justify-between">

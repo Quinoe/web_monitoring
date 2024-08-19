@@ -1,6 +1,5 @@
 import type { WithSession } from "https://deno.land/x/fresh_session@beta-0.3.0/mod.ts";
 import { Handlers, PageProps } from "$fresh/server.ts";
-import TrpcDemo from "../../islands/TrpcDemo.tsx";
 
 export const handler: Handlers<
     unknown,
