@@ -98,11 +98,9 @@ const getClientsWithStatus = async (
         .eq("ip", cpe.ip)
         .eq("interface", rest.port)
 
-      let latestStatus = (cpeStatus ?? [])?.sort((a, b) => {
+      const latestStatus = (cpeStatus ?? [])?.sort((a, b) => {
         return (b.updated_at ?? 0) - (a.updated_at ?? 0)
       })[0]
-
-      console.log(latestStatus, cpeError, cpeStatusError)
 
       return {
         ...rest,
