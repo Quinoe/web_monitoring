@@ -110,7 +110,7 @@ const getClientsWithStatus = async (
         status: getStatus(
           cpeError || cpeStatusError ? "" : (latestStatus?.status ?? ''),
         ),
-        last_updated_status: latestStatus?.updated_at  ? new Date(latestStatus?.updated_at).toLocaleString() : latestStatus?.created_at,
+        last_updated_status: latestStatus?.updated_at  ? new Date(latestStatus?.updated_at).toLocaleString() : new Date(latestStatus?.updated_at).toLocaleString(),
         ip: cpe.ip
       };
     }),
