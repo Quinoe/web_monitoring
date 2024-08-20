@@ -112,6 +112,8 @@ export function ClientsPage() {
                                 document.querySelector('#my_modal_2')?.appendChild(document.querySelector('div[role="calendar"]') as HTMLElement);
                             }, 10);
 
+                            setEditSession(false)
+
                         }
                         }
                         class="pl-[20px] rounded-lg pr-[20px] pt-[4px] pb-[4px] bg-[#60A5FA] text-[white]"
@@ -134,7 +136,6 @@ export function ClientsPage() {
                                             type="text"
                                             placeholder="Type here"
                                             name="sheet_name"
-                                            disabled={isEditSession}
                                             className="input input-bordered w-full max-w-xs"
                                         />
                                     </div>
@@ -145,7 +146,6 @@ export function ClientsPage() {
                                         <input
                                             type="file"
                                             name="files"
-                                            disabled={isEditSession}
                                             class="ml-[65px]"
                                         />
                                     </div>
@@ -430,6 +430,7 @@ export function ClientsPage() {
                                     dialog?.classList.remove('modal-open');
                                     setCpeValue('')
                                     setServiceValue('')
+                                    setEditSession(false)
                                 }}>Close</button>
 
                                 <button class="btn btn-primary" onClick={() => {
@@ -459,6 +460,7 @@ export function ClientsPage() {
                                                     dialog?.classList.remove('modal-open');
                                                     setCpeValue('')
                                                     setServiceValue('')
+                                                    setEditSession(false)
                                                 }
                                             );
                                     } else {
