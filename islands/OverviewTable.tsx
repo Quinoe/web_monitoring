@@ -122,7 +122,7 @@ export function OverviewTable() {
                                                     {client_name}
                                                 </td>
                                                 <td class="whitespace-nowrap  px-6 py-4">
-                                                    {last_updated_status}
+                                                    {last_updated_status ? new Date(+last_updated_status).toLocaleString() : '-'}
                                                 </td>
                                                 <td class="whitespace-nowrap  px-6 py-4">
                                                     {getStatus(status)}

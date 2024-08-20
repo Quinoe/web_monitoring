@@ -69,17 +69,6 @@ const getStatus = (status: string) => {
   }
 };
 
-function arraysEqual(arr1, arr2) {
-  if (arr1.length !== arr2.length) return false;
-
-  for (let i = 0; i < arr1.length; i++) {
-      if (arr1[i] !== arr2[i]) return false;
-  }
-
-  return true;
-}
-
-
 const getClientsWithStatus = async (
   data: ClientType[],
   status?: "active" | "down",
@@ -91,8 +80,6 @@ const getClientsWithStatus = async (
         .select("*")
         .eq("cpe_name", rest.cpe)
         .single();
-
-      console.log(cpe, cpeError, rest.cpe)
 
       if (!cpe) {
         return {
@@ -125,7 +112,7 @@ const getClientsWithStatus = async (
         status: getStatus(
           cpeError || cpeStatusError ? "" : (latestStatus?.status ?? ''),
         ),
-        last_updated_status: latestStatus?.updated_at || latestStatus?.created_at  ? new Date(latestStatus?.updated_at ?? latestStatus?.created_at).toLocaleString() : '',
+        last_updated_status: latestStatus?.updated_at || latestStatus?.created_at  ? `${latestStatus?.updated_at ?? latestStatus?.created_at}` : '',
         ip: cpe.ip
       };
     }),
