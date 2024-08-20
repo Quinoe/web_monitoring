@@ -106,7 +106,7 @@ export function OverviewTable() {
                             </thead>
                             <tbody class="text-[black]">
                                 {
-                                    (clients as ClientTypeWithStatus[])?.map(({ id_pelanggan, client_name, status, last_updated_status }) => {
+                                    (clients as ClientTypeWithStatus[] ?? [])?.map(({ id_pelanggan, client_name, status, last_updated_status }) => {
                                         return (
                                             <tr class="border-b border-neutral-200 dark:border-white/10">
                                                 <td class="whitespace-nowrap  px-6 py-4 font-medium">
