@@ -120,7 +120,9 @@ const getClientsWithStatus = async (
 
   return clients.filter(({ status: clientStatus }) =>
     status === undefined ? true : status === clientStatus
-  );
+  ).sort((a, b) => {
+  return (+b.last_updated_status ?? 0) - (+a.last_updated_status ?? 0)
+  });
 };
 
 // Define a schema that allows any JSON object
