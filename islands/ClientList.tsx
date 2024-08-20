@@ -1,7 +1,7 @@
 
 import { trpc } from "../utils/trpc.ts";
 import { useState, useEffect } from "preact/hooks";
-import { signal } from "@preact/signals";
+import { effect, signal } from "@preact/signals";
 
 import type { inferRouterOutputs } from '@trpc/server';
 import type { AppRouter } from '../router.ts';
@@ -9,6 +9,7 @@ import { ClientTypeWithStatus } from "../models/Clients.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { getStatus } from "./OverviewTable.tsx";
 import { Map } from "./Map.tsx";
+import { updateSignal } from "../routes/index.tsx";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
@@ -22,6 +23,7 @@ export function ClinetList({ clients }: any) {
     if (!IS_BROWSER) {
         return null
     }
+
 
     const handleInputChange = (e: Event) => {
         const target = e.target as HTMLInputElement;
@@ -128,16 +130,20 @@ export function ClinetList({ clients }: any) {
 
 export function DashboardPage() {
     const [clients, setClients] = useState<PostCreateOutput>([]);
+    const [shouldUpdate, setShouldUpdate] = useState<number | null>(null)
+    effect(() => {
+        setShouldUpdate(updateSignal.value)
+    })
 
     const fetchPosts = (query: string) => trpc["clients.search"].mutate({ query }).then(setClients);
 
     useEffect(() => {
         fetchPosts('')
     }, [])
-
+ 
     useEffect(() => {
         fetchPosts(searchQuery.value)
-    }, [searchQuery.value])
+    }, [searchQuery.value, shouldUpdate])
 
     return (
         <>

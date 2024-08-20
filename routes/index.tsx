@@ -4,6 +4,7 @@ import { Map } from "../islands/Map.tsx";
 import { ClinetList, DashboardPage } from "../islands/ClientList.tsx";
 import { Handlers } from "$fresh/server.ts";
 import { WithSession } from "https://deno.land/x/fresh_session@beta-0.3.0/mod.ts";
+import { signal } from "@preact/signals";
 
 export const handler: Handlers<
   unknown,
@@ -29,6 +30,8 @@ export const handler: Handlers<
 
 };
 
+export const updateSignal = signal<number>(Date.now())
+
 export default function Home() {
   return (
     <div
@@ -43,7 +46,8 @@ export default function Home() {
         <div class="bg-[white] rounded-lg flex-1 p-[10px] h-full w-[100%] px-[20px] flex flex-col w-fit gap-[10px]">
           <OverviewCard />
 
-          <div class="h-[300px] w-[95%]">
+
+          <div class="h-[300px] w-[100%]">
             <OverviewTable />
           </div>
         </div>

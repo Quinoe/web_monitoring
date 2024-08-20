@@ -6,6 +6,7 @@ import type { AppRouter } from '../router.ts';
 import { ClientTypeWithStatus, query } from "../models/Clients.ts";
 import { filterType } from "./OverviewCard.tsx";
 import { IS_BROWSER } from "$fresh/runtime.ts";
+import { updateSignal } from "../routes/index.tsx";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
@@ -47,6 +48,7 @@ export function OverviewTable() {
     const [filter, setFilter] = useState<'active' | 'down' | ''>('')
 
     const [clients, setClients] = useState<PostCreateOutput>()
+    const [shouldUpdate, setShouldUpdate] = useState<number | null>(null)
     const fetchPosts = (query: string, type?: 'active' | 'down' | '') => trpc["clients.search"].mutate({
         query,
         type
@@ -58,9 +60,13 @@ export function OverviewTable() {
         setFilter(filterType.value)
     })
 
+    effect(() => {
+        setShouldUpdate(updateSignal.value)
+    })
+
     useEffect(() => {
         fetchPosts('', filter)
-    }, [filter])
+    }, [filter, shouldUpdate])
 
     useEffect(() => {
         fetchPosts('')
