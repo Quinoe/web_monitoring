@@ -11,6 +11,7 @@ import { Client } from "https://deno.land/x/mysql/mod.ts";
 import { createClient } from "npm:@supabase/supabase-js";
 import { endOfMonth, startOfMonth, subMonths } from "npm:date-fns";
 import { createCpeSchema } from "./models/CPE.ts";
+import stringCompare from 'npm:string-comparison'
 
 const t = initTRPC.create();
 const router = t.router;
@@ -68,6 +69,17 @@ const getStatus = (status: string) => {
   }
 };
 
+function arraysEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+
+  for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) return false;
+  }
+
+  return true;
+}
+
+
 const getClientsWithStatus = async (
   data: ClientType[],
   status?: "active" | "down",
@@ -79,6 +91,8 @@ const getClientsWithStatus = async (
         .select("*")
         .eq("cpe_name", rest.cpe)
         .single();
+
+      console.log(cpe, cpeError, rest.cpe)
 
       if (!cpe) {
         return {
@@ -96,9 +110,10 @@ const getClientsWithStatus = async (
         .from("cpe_status")
         .select("*")
         .eq("ip", cpe.ip)
-        .eq("interface", rest.port)
 
-      const latestStatus = (cpeStatus ?? [])?.sort((a, b) => {
+      const latestStatus = (cpeStatus ?? []).filter((status) => {
+        return status.interface.trim() === rest.port.trim()
+      })?.sort((a, b) => {
         return (b.updated_at ?? 0) - (a.updated_at ?? 0)
       })[0]
 
@@ -182,8 +197,6 @@ export const appRouter = router({
       }
 
       const clients = await getClientsWithStatus(data);
-
-      console.log(clients, 'test')
 
       const list = clients.filter((client) => {
         if (type) {
@@ -404,6 +417,7 @@ export const appRouter = router({
     .mutation(async ({ input }) => {
       const updatedAt = Date.now();
 
+
       for (const cpe of input) {
         const { ip, ...rest } = cpe;
 
@@ -412,8 +426,7 @@ export const appRouter = router({
           .from("cpe_status")
           .select("*")
           .eq("ip", ip)
-          .eq("interface", cpe.interface)
-          .single();
+          .eq("interface", cpe.interface || cpe.port)
 
         if (selectError && selectError.code !== "PGRST116") {
           // Handle error (other than "No rows returned" error)
@@ -427,26 +440,29 @@ export const appRouter = router({
           "description": rest.description || rest.desc,
         }
 
-        if (existingCPE !== null) {
+        if (existingCPE?.[0] !== undefined) {
           const updated = {
-            ...existingCPE,
+            ...existingCPE?.[0],
             ...cpe_status,
             ip,
             updated_at: updatedAt,
           };
+
           // If IP exists, update the entry
           const { error: updateError } = await supabase
             .from("cpe_status")
             .update(updated)
+            .eq('uuid', updated.uuid)
             .eq("ip", ip)
-            .eq("interface", cpe.interface);
+            .eq("interface", cpe.interface || cpe.port);
+
 
           if (updateError) {
-            throw new Error(`Error updating status`);
+            throw new Error(`Error updating status` + updateError.message);
           }
         } else {
           const updated = {
-            ...existingCPE,
+            ...existingCPE?.[0],
             ...cpe_status,
             uuid: crypto.randomUUID(),
             ip,
